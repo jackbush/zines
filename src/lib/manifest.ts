@@ -26,7 +26,7 @@ const entrySchema = z
     file: z.string().regex(/\.png$/i, 'must be a .png').optional(),
     /** Where to buy a copy (a Ko-fi shop item). Shows "Buy a copy" on the zine's page. */
     buy: z.url().optional(),
-    /** The zine page's colour below the top bar, as hex (#f4efe6). Defaults to the site's paper colour. */
+    /** The zine page's colour below the top bar, as hex (#f4efe6). Defaults to the site's `viewer` grey. */
     background: z.string().regex(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i, 'a hex colour like #f4efe6').optional(),
   })
   .strict();

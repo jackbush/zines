@@ -12,7 +12,7 @@ export const colours = {
   inkHover: '#4a453e',
   /** An outlined button under the pointer. */
   hover: '#e8e2d5',
-  /** Behind the reader on /preview: a mid grey, a little creamy. */
+  /** Behind the reader, on /preview and any zine without its own `background`: a mid grey, a little creamy. */
   viewer: '#8c887f',
 };
 
