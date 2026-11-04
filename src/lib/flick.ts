@@ -47,8 +47,8 @@ export interface Flick {
   destroy(): void;
 }
 
-/** Fills `root` with a viewer for these page images. */
-export function createFlick(root: HTMLElement, pages: Record<Page, string>): Flick {
+/** Fills `root` with a viewer for these page images. `labels` shows the page numbers under the book. */
+export function createFlick(root: HTMLElement, pages: Record<Page, string>, { labels = true } = {}): Flick {
   root.classList.add('flick');
   root.innerHTML = `
     <div class="flick-book">
@@ -57,7 +57,7 @@ export function createFlick(root: HTMLElement, pages: Record<Page, string>): Fli
       <div class="flick-slot flick-leaf" data-layer="leaf-left"><i class="flick-scan"></i></div>
       <div class="flick-slot flick-leaf" data-layer="leaf-right"><i class="flick-scan"></i></div>
     </div>
-    <p class="flick-label" aria-live="polite"></p>`;
+    <p class="flick-label" aria-live="polite"${labels ? '' : ' hidden'}></p>`;
   const book = root.querySelector<HTMLElement>('.flick-book')!;
   const status = root.querySelector<HTMLElement>('.flick-label')!;
   const layer = (name: string) => root.querySelector<HTMLElement>(`[data-layer="${name}"]`)!;

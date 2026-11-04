@@ -11,6 +11,8 @@ export interface ZineEntry extends Zine {
   pages: Record<Page, string>;
   /** The cover, small, for the shelf. */
   thumb: string;
+  /** The whole sheet, for the flat view. */
+  sheet: string;
 }
 
 function panel(slug: string, name: string): string {
@@ -24,5 +26,6 @@ export function getZines(): ZineEntry[] {
     ...z,
     pages: Object.fromEntries(PAGES.map((p) => [p, panel(z.slug, p)])) as Record<Page, string>,
     thumb: panel(z.slug, 'thumb'),
+    sheet: panel(z.slug, 'sheet'),
   }));
 }

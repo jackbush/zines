@@ -1,10 +1,11 @@
 ---
-// One zine: the flick viewer, full screen, with a back button to the library and, if the
-// manifest has a `buy` link, "Buy a copy".
+// One zine: the top bar (back to the library, the name, the view toggle), the reader in the
+// zine's own colour, and "Buy a copy" if the manifest has a `buy` link.
 import BaseLayout from '../layouts/BaseLayout.astro';
-import Back from '../components/Back.astro';
-import Flick from '../components/Flick.astro';
+import ModeToggle from '../components/ModeToggle.astro';
+import TopBar from '../components/TopBar.astro';
 import { site } from '../lib/site';
+import type { Sources } from '../lib/views';
 import { getZines, type ZineEntry } from '../lib/zines';
 
 export function getStaticPaths() {
@@ -12,23 +13,42 @@ export function getStaticPaths() {
 }
 
 const { zine } = Astro.props as { zine: ZineEntry };
+const sources: Sources = { pages: zine.pages, sheet: zine.sheet };
 ---
 
 <BaseLayout title={`${zine.name} | ${site.name}`} appTitle={zine.name}>
-  <Back />
   <main>
-    <h1>{zine.name}</h1>
-    <Flick pages={zine.pages} label={zine.name} />
-    {zine.buy && <a class="buy" href={zine.buy} rel="noopener">Buy a copy</a>}
+    <TopBar>
+      {zine.name}
+      <ModeToggle slot="actions" />
+    </TopBar>
+    <div class="page" style={`background:${zine.background}`}>
+      <div class="stage" id="stage" role="region" aria-label={zine.name} data-sources={JSON.stringify(sources)}></div>
+      {zine.buy && <a class="buy" href={zine.buy} rel="noopener">Buy a copy</a>}
+    </div>
   </main>
 </BaseLayout>
 
+<script>
+  import { bindToggle, createView, type Mode, type Sources } from '../lib/views';
+
+  const stage = document.getElementById('stage')!;
+  const sources: Sources = JSON.parse(stage.dataset.sources!);
+  const open = (mode: Mode) => createView(stage, mode, sources, { labels: false });
+  let view = open('flick');
+  bindToggle(document.getElementById('toggle')!, 'flick', (mode) => {
+    view.destroy();
+    view = open(mode);
+  });
+</script>
+
 <style>
-  main { height: 100dvh; display: grid; grid-template-rows: auto 1fr auto; }
-  h1 { margin: 0; padding: max(14px, env(safe-area-inset-top)) 68px 0; min-height: 54px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600; }
+  main { height: 100dvh; display: grid; grid-template-rows: auto 1fr; }
+  .page { min-height: 0; display: grid; grid-template-rows: 1fr auto; }
+  .stage { position: relative; min-height: 0; }
   .buy {
     justify-self: center; margin: 0 0 max(16px, env(safe-area-inset-bottom));
-    padding: 10px 18px; border: 1px solid var(--line); color: var(--ink); text-decoration: none;
+    padding: 10px 18px; border: 1px solid var(--line); background: #fff; color: var(--ink); text-decoration: none;
   }
   .buy:hover, .buy:focus-visible { background: var(--ink); color: #fff; }
 </style>

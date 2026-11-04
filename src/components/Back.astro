@@ -1,5 +1,5 @@
 ---
-// The round back button, top left. It goes to `href` (the library by default). A page that
+// The round back button, at the left of the top bar (TopBar.astro). It goes to `href` (the library by default). A page that
 // can be the first stop from jackbush.github.io passes `home`: with ?from=home the button goes
 // there instead. Any other page keeps ?from=home on its link so the library still knows.
 import { url } from '../lib/site';
@@ -37,7 +37,7 @@ const { href = url(), label = 'All zines', hidden = false, home = false } = Astr
 
 <style is:global>
   .back {
-    position: fixed; top: max(14px, env(safe-area-inset-top)); left: max(14px, env(safe-area-inset-left)); z-index: 3;
+    grid-column: 1; justify-self: start;
     width: 40px; height: 40px; padding: 9px; display: block;
     border: 1px solid #000; border-radius: 50%; background: #fff; color: #000;
   }

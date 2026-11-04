@@ -1,6 +1,6 @@
 /* The scroll view (src/lib/scroll.ts). It sets --page-w and --page-h on the root. */
 .scroll {
-  position: absolute; inset: 0; overflow-y: auto; padding: 16px;
+  overflow-y: auto; padding: 16px;
   display: flex; flex-direction: column; align-items: center; gap: 24px;
 }
 .scroll:focus-visible { outline: 2px solid var(--line, #000); outline-offset: -2px; }

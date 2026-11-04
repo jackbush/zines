@@ -1,15 +1,12 @@
 // Slices an uploaded sheet into page images in the browser, with the same map as the build-time
-// slicer (sheet.ts). Nothing is stored: the pages are object URLs that `dispose` revokes.
+// slicer (sheet.ts). Nothing is stored: the pages and the sheet are object URLs that `dispose` revokes.
 
 import { PAGES, panelRect, type Page } from './sheet';
 
-/** The height of the sheet thumbnail's backing canvas (px); the page scales it down. */
-const THUMB_PX = 120;
-
 export interface Sheet {
   pages: Record<Page, string>;
-  /** The whole sheet, small. */
-  thumb: HTMLCanvasElement;
+  /** The whole sheet, as uploaded. */
+  sheet: string;
   width: number;
   height: number;
   /** Revokes the pages' object URLs. */
@@ -26,11 +23,6 @@ export async function slice(file: File): Promise<Sheet> {
   const { width, height } = bitmap;
   const urls: string[] = [];
   try {
-    const thumb = document.createElement('canvas');
-    thumb.height = THUMB_PX;
-    thumb.width = Math.round((THUMB_PX * width) / height);
-    thumb.getContext('2d')!.drawImage(bitmap, 0, 0, thumb.width, thumb.height);
-
     const blobs = await Promise.all(
       PAGES.map((page) => {
         const { left, top, width: w, height: h, flipped } = panelRect(page, width, height);
@@ -45,7 +37,9 @@ export async function slice(file: File): Promise<Sheet> {
     );
     const pages = {} as Record<Page, string>;
     PAGES.forEach((page, i) => urls.push((pages[page] = URL.createObjectURL(blobs[i]))));
-    return { pages, thumb, width, height, dispose: () => urls.forEach((u) => URL.revokeObjectURL(u)) };
+    const sheet = URL.createObjectURL(file);
+    urls.push(sheet);
+    return { pages, sheet, width, height, dispose: () => urls.forEach((u) => URL.revokeObjectURL(u)) };
   } finally {
     bitmap.close();
   }

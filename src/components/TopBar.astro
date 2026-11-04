@@ -1,0 +1,36 @@
+---
+// The bar across the top of every page: the back arrow, the title, and the page's controls on the
+// right (slot "actions"). It's always white, whatever colour the page below it is.
+import Back from './Back.astro';
+
+interface Props {
+  /** Centre the title on the page (zines, the library), or start it after the back arrow (preview). */
+  centred?: boolean;
+  /** Passed to Back: see Back.astro. */
+  home?: boolean;
+  backHidden?: boolean;
+}
+
+const { centred = true, home = false, backHidden = false } = Astro.props;
+---
+
+<header class:list={['bar', { centred }]}>
+  <Back home={home} hidden={backHidden} />
+  <h1><slot /></h1>
+  <div class="actions"><slot name="actions" /></div>
+</header>
+
+<style>
+  .bar {
+    display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px;
+    min-height: 64px; padding: max(12px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) 12px max(14px, env(safe-area-inset-left));
+    border-bottom: 1px solid var(--line); background: #fff;
+  }
+  /* Equal side columns keep the title on the page's centre line, room permitting. */
+  .centred { grid-template-columns: 1fr minmax(0, auto) 1fr; }
+  .centred h1 { text-align: center; }
+  h1 { grid-column: 2; margin: 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 16px; font-weight: 600; }
+  .actions { grid-column: 3; justify-self: end; display: flex; align-items: center; }
+  /* Phones: the title takes whatever the arrow and controls leave. */
+  @media (max-width: 599px) { .centred { grid-template-columns: auto minmax(0, 1fr) auto; } }
+</style>

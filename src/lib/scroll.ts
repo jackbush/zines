@@ -15,8 +15,8 @@ export interface Scroll {
   destroy(): void;
 }
 
-/** Fills `root` with a scrolling stack of these page images. */
-export function createScroll(root: HTMLElement, pages: Record<Page, string>): Scroll {
+/** Fills `root` with a scrolling stack of these page images. `labels` captions each view with its page numbers. */
+export function createScroll(root: HTMLElement, pages: Record<Page, string>, { labels = true } = {}): Scroll {
   root.classList.add('scroll');
   root.tabIndex = 0;
   root.setAttribute('aria-label', 'All pages');
@@ -42,9 +42,12 @@ export function createScroll(root: HTMLElement, pages: Record<Page, string>): Sc
         const row = document.createElement('div');
         row.className = 'scroll-pages';
         row.append(...group.map((p) => imgs[p]));
-        const caption = document.createElement('figcaption');
-        caption.textContent = group.map(pageName).join('–');
-        figure.append(row, caption);
+        figure.append(row);
+        if (labels) {
+          const caption = document.createElement('figcaption');
+          caption.textContent = group.map(pageName).join('–');
+          figure.append(caption);
+        }
         return figure;
       }),
     );
@@ -59,7 +62,7 @@ export function createScroll(root: HTMLElement, pages: Record<Page, string>): Sc
       build();
     }
     const across = narrow ? 1 : 2;
-    const pageW = Math.max(0, Math.min((width - 2 * MARGIN) / across, (height - 2 * MARGIN - LABEL) * PAGE_ASPECT));
+    const pageW = Math.max(0, Math.min((width - 2 * MARGIN) / across, (height - 2 * MARGIN - (labels ? LABEL : 0)) * PAGE_ASPECT));
     root.style.setProperty('--page-w', `${pageW}px`);
     root.style.setProperty('--page-h', `${pageW / PAGE_ASPECT}px`);
   }

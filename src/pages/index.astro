@@ -1,7 +1,7 @@
 ---
 // The library: every zine on a shelf, then the preview "zine" after the last one.
 import BaseLayout from '../layouts/BaseLayout.astro';
-import Back from '../components/Back.astro';
+import TopBar from '../components/TopBar.astro';
 import { PAGE_ASPECT } from '../lib/sheet';
 import { url } from '../lib/site';
 import { getZines } from '../lib/zines';
@@ -26,10 +26,9 @@ const EAGER = PER_ROW_MAX;
 ---
 
 <BaseLayout title="Zines">
-  <Back home hidden />
   <Fragment set:html={`<style>${perRow}</style>`} />
+  <TopBar home backHidden>Zines</TopBar>
   <main>
-    <h1>Zines</h1>
     <!-- Every cover draws a shelf line wider than the shelf, and the shelf clips it at its padding,
          so each row gets one unbroken line, a short last row included, with no JS. The preview
          "zine" is the last item, wherever it falls. -->
@@ -65,8 +64,7 @@ const EAGER = PER_ROW_MAX;
 
 <style>
   /* --per-row starts here so the breakpoints above, on .shelves, override it. */
-  main { container: library / inline-size; --per-row: 1; padding: max(14px, env(safe-area-inset-top)) 16px max(32px, env(safe-area-inset-bottom)); }
-  h1 { margin: 0 0 32px; min-height: 40px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600; }
+  main { container: library / inline-size; --per-row: 1; padding: 32px 16px max(32px, env(safe-area-inset-bottom)); }
   .shelves {
     /* Each cover's share of the width less a gutter, until it's as tall as the window allows. */
     --cover: min(100cqw / var(--per-row) - var(--gutter), var(--max-h) * var(--aspect));

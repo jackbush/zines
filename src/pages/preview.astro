@@ -1,32 +1,26 @@
 ---
-// A private check of a sheet before it's published: pick or drop a PNG and read it as a flick
-// or a scroll. It's sliced in the browser with the same map as the build, and keeps nothing:
-// no storage, no upload, and every load starts empty.
+// A private check of a sheet before it's published: pick or drop a PNG and read it as a flick,
+// a scroll or the flat sheet. It's sliced in the browser with the same map as the build, and
+// keeps nothing: no storage, no upload, and every load starts empty.
 import BaseLayout from '../layouts/BaseLayout.astro';
-import Back from '../components/Back.astro';
+import ModeToggle from '../components/ModeToggle.astro';
+import TopBar from '../components/TopBar.astro';
 import { site } from '../lib/site';
 ---
 
 <BaseLayout title={`Preview | ${site.name}`}>
   <meta name="robots" content="noindex" slot="head" />
-  <Back />
   <main id="app" data-empty>
-    <header>
-      <div class="bar">
-        <canvas class="thumb" id="thumb" hidden aria-hidden="true"></canvas>
-        <span class="name" id="name" hidden></span>
-        <label class="btn upload">
-          <input id="file" type="file" accept="image/png" />
-          <span>Upload<span class="more"> new version</span></span>
-        </label>
-        <div class="toggle" id="toggle" role="group" aria-label="View" hidden>
-          <button type="button" data-mode="scroll" aria-pressed="false">Scroll</button>
-          <button type="button" data-mode="flick" aria-pressed="true">Flick</button>
-        </div>
-      </div>
-      <p class="note" id="note" role="status" hidden></p>
-    </header>
+    <TopBar centred={false}>
+      <span class="title">
+        <span class="name" id="name">Preview</span>
+        <button class="update" id="update" type="button" hidden>(update)</button>
+      </span>
+      <ModeToggle slot="actions" hidden />
+    </TopBar>
+    <input id="file" type="file" accept="image/png" hidden />
     <div class="stage" id="stage">
+      <p class="note" id="note" role="status" hidden></p>
       <button class="zone" id="zone" type="button">Drop an A3 landscape PNG here, or choose a file</button>
     </div>
   </main>
@@ -34,17 +28,15 @@ import { site } from '../lib/site';
 </BaseLayout>
 
 <script>
-  import { createFlick } from '../lib/flick';
-  import { createScroll } from '../lib/scroll';
   import { isSheetShaped } from '../lib/sheet';
   import { slice, type Sheet } from '../lib/slice';
+  import { bindToggle, createView, type Mode } from '../lib/views';
 
-  type Mode = 'flick' | 'scroll';
   const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
   const app = $('app');
   const input = $<HTMLInputElement>('file');
-  const thumb = $<HTMLCanvasElement>('thumb');
   const name = $('name');
+  const update = $('update');
   const note = $('note');
   const toggle = $('toggle');
   const stage = $('stage');
@@ -52,25 +44,19 @@ import { site } from '../lib/site';
 
   let mode: Mode = 'flick';
   let sheet: Sheet | null = null;
-  let viewer: { el: HTMLElement; destroy(): void } | null = null;
+  let viewer: { destroy(): void } | null = null;
   // Counts uploads, decided when each starts: a slow decode that finishes after a newer file was
   // chosen sees it's out of date and drops its result.
   let generation = 0;
 
   function unmount() {
     viewer?.destroy();
-    viewer?.el.remove();
     viewer = null;
   }
 
   function mount() {
     unmount();
-    if (!sheet) return;
-    const el = document.createElement('div');
-    el.className = 'viewer';
-    stage.append(el);
-    viewer = { el, ...(mode === 'flick' ? createFlick(el, sheet.pages) : createScroll(el, sheet.pages)) };
-    for (const button of toggle.querySelectorAll('button')) button.setAttribute('aria-pressed', String(button.dataset.mode === mode));
+    if (sheet) viewer = createView(stage, mode, sheet);
   }
 
   function say(text: string) {
@@ -94,10 +80,7 @@ import { site } from '../lib/site';
     sheet = next;
     delete app.dataset.empty;
     name.textContent = name.title = file.name;
-    thumb.width = next.thumb.width;
-    thumb.height = next.thumb.height;
-    thumb.getContext('2d')!.drawImage(next.thumb, 0, 0);
-    for (const el of [thumb, name, toggle]) el.hidden = false;
+    update.hidden = toggle.hidden = false;
     say(isSheetShaped(next.width, next.height) ? '' : 'Not A-series landscape: pages will be stretched');
     mount();
   }
@@ -108,15 +91,11 @@ import { site } from '../lib/site';
     input.value = '';
     if (file) load(file);
   });
-  $('zone').addEventListener('click', () => input.click());
-  toggle.addEventListener('click', (e) => {
-    const next = (e.target as Element).closest<HTMLElement>('button')?.dataset.mode as Mode | undefined;
-    if (next && next !== mode) {
-      mode = next;
-      mount();
-    }
+  for (const id of ['zone', 'update']) $(id).addEventListener('click', () => input.click());
+  bindToggle(toggle, mode, (next) => {
+    mode = next;
+    mount();
   });
-
   // Dropping a file works anywhere, at any time. dragenter and dragleave also fire for the page's
   // children, so a counter tells when the drag has really left.
   let dragging = 0;
@@ -138,33 +117,18 @@ import { site } from '../lib/site';
 </script>
 
 <style>
-  [hidden] { display: none !important; }
   main { height: 100dvh; display: grid; grid-template-rows: auto 1fr; }
-  header { padding: max(14px, env(safe-area-inset-top)) 16px 14px 68px; border-bottom: 1px solid var(--line); }
-  .bar { height: 40px; display: flex; align-items: center; gap: 12px; }
-  .thumb { flex: none; height: 36px; width: auto; box-shadow: 0 0 0 1px var(--line); }
-  .name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  /* Right-aligned: with no file the upload button is the only thing in the bar. */
-  .upload { margin-left: auto; }
-  .name:not([hidden]) + .upload { margin-left: 0; }
-  .note { margin: 0; padding-top: 8px; font-size: 13px; color: var(--ink-dim); }
-
-  .btn, .toggle button {
-    height: 36px; padding: 0 12px; display: inline-flex; align-items: center; flex: none;
-    border: 1px solid var(--line); background: #fff; color: var(--ink); font: inherit; font-size: 14px; cursor: pointer;
-  }
-  .btn:hover, .toggle button:hover { background: var(--ink); color: #fff; }
-  .btn { position: relative; }
-  main[data-empty] .more { display: none; }
-  /* The file input stays focusable but invisible; its label shows the focus ring. */
-  .btn input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
-  .btn:has(input:focus-visible), .toggle button:focus-visible, .zone:focus-visible { outline: 2px solid var(--line); outline-offset: 2px; }
-  .toggle { display: flex; flex: none; }
-  .toggle button + button { margin-left: -1px; }
-  .toggle button[aria-pressed='true'] { background: var(--ink); color: #fff; }
+  /* The name gives way before (update) does. */
+  .title { display: flex; align-items: baseline; min-width: 0; }
+  .name { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .update { flex: none; margin-left: 6px; padding: 0; border: 0; background: none; color: var(--ink-dim); font: inherit; font-weight: 400; text-decoration: underline; cursor: pointer; }
+  .update:hover { color: var(--ink); }
+  .update[hidden] { display: none; }
+  .update:focus-visible, .zone:focus-visible { outline: 2px solid var(--line); outline-offset: 2px; }
 
   .stage { position: relative; min-height: 0; }
-  .stage :global(.viewer) { position: absolute; inset: 0; }
+  .note { position: absolute; z-index: 1; top: 8px; left: 16px; right: 16px; margin: 0; font-size: 13px; color: var(--ink-dim); }
+  .note[hidden] { display: none; }
   .zone {
     position: absolute; inset: 16px; padding: 16px; display: grid; place-items: center; text-align: center;
     border: 1px dashed var(--line); background: #fff; color: var(--ink-dim); font: inherit; cursor: pointer;
@@ -174,11 +138,5 @@ import { site } from '../lib/site';
     position: fixed; inset: 8px; z-index: 4; display: grid; place-items: center; pointer-events: none;
     border: 2px dashed var(--line); background: rgb(255 255 255 / 0.85);
   }
-
-  /* Phones: the thumbnail and name get the first row, the buttons wrap onto a second. */
-  @media (max-width: 599px) {
-    .more { display: none; }
-    .bar { height: auto; min-height: 40px; flex-wrap: wrap; gap: 8px; }
-    .name { flex-basis: calc(100% - 64px); }
-  }
+  .drop[hidden] { display: none; }
 </style>
