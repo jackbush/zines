@@ -1,5 +1,5 @@
 ---
-// The round back button, at the left of the top bar (TopBar.astro). It goes to `href` (the library by default). A page that
+// The back button, at the left of the top bar (TopBar.astro): a square filled .btn, like the bar's other controls. It goes to `href` (the library by default). A page that
 // can be the first stop from jackbush.github.io passes `home`: with ?from=home the button goes
 // there instead. Any other page keeps ?from=home on its link so the library still knows.
 import { url } from '../lib/site';
@@ -16,7 +16,7 @@ interface Props {
 const { href = url(), label = 'All zines', hidden = false, home = false } = Astro.props;
 ---
 
-<a id="back" class="back" href={href} aria-label={label} hidden={hidden} data-home={home ? '' : null}>
+<a id="back" class="btn btn-fill back" href={href} aria-label={label} hidden={hidden} data-home={home ? '' : null}>
   <svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M224,128a8,8,0,0,1-8,8H59.31l58.35,58.34a8,8,0,0,1-11.32,11.32l-72-72a8,8,0,0,1,0-11.32l72-72a8,8,0,0,1,11.32,11.32L59.31,120H216A8,8,0,0,1,224,128Z" /></svg>
 </a>
 <script is:inline>
@@ -36,13 +36,7 @@ const { href = url(), label = 'All zines', hidden = false, home = false } = Astr
 </script>
 
 <style is:global>
-  .back {
-    grid-column: 1; justify-self: start;
-    width: 40px; height: 40px; padding: 9px; display: block;
-    border: 1px solid var(--ink); border-radius: 50%; background: var(--paper); color: var(--ink);
-  }
+  .back { grid-column: 1; justify-self: start; width: 32px; padding: 0; justify-content: center; }
   .back[hidden] { display: none; }
-  .back svg { width: 100%; height: 100%; display: block; }
-  .back:hover { background: var(--hover); }
-  .back:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  .back svg { width: 16px; height: 16px; display: block; }
 </style>

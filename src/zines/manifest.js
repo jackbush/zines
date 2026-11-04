@@ -2,9 +2,4 @@
 // unless `file` says otherwise, and its URL is the name slugified unless `slug` says otherwise.
 // `buy` (a Ko-fi shop item URL) adds a "Buy a copy" link to its page, and `background` (hex)
 // colours its page below the top bar. See src/lib/manifest.ts.
-export default [
-  { name: 'Placeholder One', buy: 'https://ko-fi.com/' },
-  { name: 'Placeholder Two', background: '#e8e4dc' },
-  { name: 'Placeholder Three' },
-  { name: 'Placeholder Four' },
-];
+export default [{ name: 'Sample' }];

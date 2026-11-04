@@ -67,7 +67,7 @@ Who does each step: I keep anything where the details need judgement (geometry, 
 ## Open
 
 - The panel map assumes the standard fold. Check it against one of your real sheets.
-- Placeholder One's `buy` is `https://ko-fi.com/`, only to show the button. Replace it with real Ko-fi links.
+- The library holds only the navy `Sample` sheet (made by `scripts/placeholder.mjs`). Replace it with real zines and their Ko-fi links.
 - No share image or PNG home-screen icons yet (BaseLayout omits og:image without one).
 
 ## Later
