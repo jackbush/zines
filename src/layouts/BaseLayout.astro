@@ -1,0 +1,84 @@
+---
+import { site, url } from '../lib/site';
+
+interface Props {
+  /** <title> and share title, verbatim: pages compose their own. */
+  title: string;
+  /** Name under the icon when the page is added to a home screen. */
+  appTitle?: string;
+  /** Page background and theme-color. */
+  background?: string;
+  /** Link-preview image (1200×630) and its alt text. Without one, the share tags omit it. */
+  image?: string;
+  imageAlt?: string;
+}
+
+const { title, appTitle = site.name, background = '#fff', image, imageAlt = '' } = Astro.props;
+// Stamped with the commit hash by the Pages workflow; see src/lib/version.ts.
+const build = import.meta.env.PUBLIC_BUILD || 'dev';
+// Share cards need absolute URLs; a relative og:image is dropped.
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const shareImage = image ? new URL(image, Astro.site) : null;
+---
+
+<!doctype html>
+<html lang="en" style={`background:${background}`}>
+  <head>
+    <meta charset="utf-8" />
+    <!-- No pinch or double-tap zoom on phones, so the viewer's taps and swipes never zoom the page.
+         Desktop browsers ignore these, so their zoom still works. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <title>{title}</title>
+    <meta name="description" content={site.description} />
+    <link rel="canonical" href={canonical} />
+    <meta name="theme-color" content={background} />
+    <meta name="build" content={build} />
+
+    <link rel="icon" href={url('favicon.svg')} type="image/svg+xml" />
+    <link rel="manifest" href={url('site.webmanifest')} />
+    <meta name="application-name" content={appTitle} />
+    <meta name="apple-mobile-web-app-title" content={appTitle} />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={site.description} />
+    <meta property="og:url" content={canonical} />
+    {shareImage && <meta property="og:image" content={shareImage} />}
+    {shareImage && <meta property="og:image:width" content="1200" />}
+    {shareImage && <meta property="og:image:height" content="630" />}
+    {shareImage && <meta property="og:image:alt" content={imageAlt} />}
+    <meta name="twitter:card" content={shareImage ? 'summary_large_image' : 'summary'} />
+    <slot name="head" />
+  </head>
+  <body style={`background:${background}`}>
+    <slot />
+    <script>
+      import { autoReload } from '../lib/version';
+      autoReload();
+      // iOS Safari ignores user-scalable=no, so block its pinch gestures on touch screens. Only
+      // there: Safari on a Mac sends the same events for a trackpad pinch, which should still zoom.
+      if (matchMedia('(pointer: coarse)').matches) {
+        for (const type of ['gesturestart', 'gesturechange']) document.addEventListener(type, (e) => e.preventDefault());
+        document.addEventListener('touchmove', (e) => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
+      }
+    </script>
+  </body>
+</html>
+
+<style is:global>
+  :root {
+    --ink: #000;
+    --ink-dim: #666;
+    --line: #000;
+    --font: system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { color: var(--ink); font: 16px/1.5 var(--font); }
+  /* No double-tap zoom (pinch is handled above). */
+  html { touch-action: manipulation; }
+</style>

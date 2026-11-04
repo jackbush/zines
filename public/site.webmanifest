@@ -1,0 +1,9 @@
+{
+  "name": "Zines",
+  "short_name": "Zines",
+  "start_url": "/zines/",
+  "scope": "/zines/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff"
+}
