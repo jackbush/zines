@@ -2,13 +2,13 @@
 // into a booklet. This is the only place that knows where each page sits on the sheet; the
 // build-time slicer (integrations/panels.ts) and /preview's canvas slicer both read it.
 //
-//   top row (printed upside down):  4  3  2  1
-//   bottom row:                     5  6  back  cover
+//   top row (printed upside down):  6     5      4  3
+//   bottom row:                     back  front  1  2
 //
-// Reading the sheet round from the cover gives the booklet's order, which is why the top row
-// runs backwards: turn the sheet over and it reads 1 2 3 4.
+// Reading the sheet round from the front gives the booklet's order, which is why the top row
+// runs backwards: turn the sheet over and it reads 3 4 5 6.
 
-export const PAGES = ['cover', '1', '2', '3', '4', '5', '6', 'back'] as const;
+export const PAGES = ['front', '1', '2', '3', '4', '5', '6', 'back'] as const;
 export type Page = (typeof PAGES)[number];
 
 const COLS = 4;
@@ -16,24 +16,24 @@ const ROWS = 2;
 
 /** Where each page is on the sheet: column and row from the top left, and whether it's printed upside down. */
 const LAYOUT: Record<Page, { col: number; row: number; flipped: boolean }> = {
-  '4': { col: 0, row: 0, flipped: true },
-  '3': { col: 1, row: 0, flipped: true },
-  '2': { col: 2, row: 0, flipped: true },
-  '1': { col: 3, row: 0, flipped: true },
-  '5': { col: 0, row: 1, flipped: false },
-  '6': { col: 1, row: 1, flipped: false },
-  back: { col: 2, row: 1, flipped: false },
-  cover: { col: 3, row: 1, flipped: false },
+  '6': { col: 0, row: 0, flipped: true },
+  '5': { col: 1, row: 0, flipped: true },
+  '4': { col: 2, row: 0, flipped: true },
+  '3': { col: 3, row: 0, flipped: true },
+  back: { col: 0, row: 1, flipped: false },
+  front: { col: 1, row: 1, flipped: false },
+  '1': { col: 2, row: 1, flipped: false },
+  '2': { col: 3, row: 1, flipped: false },
 };
 
-/** What the reader sees in turn: the cover alone, the spreads, then the back alone. */
-export const VIEWS: readonly (readonly Page[])[] = [['cover'], ['1', '2'], ['3', '4'], ['5', '6'], ['back']];
+/** What the reader sees in turn: the front alone, the spreads, then the back alone. */
+export const VIEWS: readonly (readonly Page[])[] = [['front'], ['1', '2'], ['3', '4'], ['5', '6'], ['back']];
 
-/** A page's short label: 'Cover', '1', …, 'Back'. */
-export const pageName = (p: Page) => (p === 'cover' ? 'Cover' : p === 'back' ? 'Back' : p);
+/** A page's short label: 'Front', '1', …, 'Back'. */
+export const pageName = (p: Page) => (p === 'front' ? 'Front' : p === 'back' ? 'Back' : p);
 
 /** A page image's alt text. */
-export const pageAlt = (p: Page) => (p === 'cover' ? 'Cover' : p === 'back' ? 'Back cover' : `Page ${p}`);
+export const pageAlt = (p: Page) => (p === 'front' ? 'Front cover' : p === 'back' ? 'Back cover' : `Page ${p}`);
 
 /** A sheet's width over its height: A-series paper is 1:√2, laid landscape. */
 export const SHEET_ASPECT = Math.SQRT2;

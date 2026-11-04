@@ -7,4 +7,4 @@
 .scroll-view { margin: 0; flex: none; display: flex; flex-direction: column; align-items: center; gap: 8px; }
 .scroll-pages { display: flex; }
 .scroll-pages img { display: block; width: var(--page-w); height: var(--page-h); box-shadow: 0 0 0 1px var(--ink); }
-.scroll-view figcaption { font-size: 13px; color: var(--ink-dim); }
+.scroll-view figcaption { font-size: 13px; color: var(--ink); }

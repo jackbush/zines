@@ -22,8 +22,8 @@ Drop the sheet (an A3 landscape PNG) in `src/zines/`, then add an entry to `src/
 The sheet is the 8-panel fold: a 4×2 grid, top row printed upside down.
 
 ```
-top row (upside down):  4  3  2  1
-bottom row:             5  6  back  cover
+top row (upside down):  6     5      4  3
+bottom row:             back  front  1  2
 ```
 
 `node scripts/placeholder.mjs ["Name" …]` writes numbered test sheets.

@@ -22,7 +22,7 @@ function svgFor(name) {
     const { left, top, width, height, flipped } = panelRect(page, W, H);
     const cx = left + width / 2;
     const cy = top + height / 2;
-    const big = page === 'cover' || page === 'back' ? 150 : 420;
+    const big = page === 'front' || page === 'back' ? 150 : 420;
     out.push(`<g transform="rotate(${flipped ? 180 : 0} ${cx} ${cy})">`);
     out.push(`<rect x="${left}" y="${top}" width="${width}" height="${height}" fill="none" stroke="${TEXT}" stroke-opacity="0.35" stroke-dasharray="12 8"/>`);
     out.push(`<text x="${cx}" y="${top + 50}" font-size="28" fill-opacity="0.6">↑ top</text>`);

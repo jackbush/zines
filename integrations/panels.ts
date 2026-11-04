@@ -50,7 +50,7 @@ export default function panels(): AstroIntegration {
             const cut = await sharp(data, raw).extract(rect).raw().toBuffer({ resolveWithObject: true });
             const panel = sharp(cut.data, { raw: cut.info }).rotate(flipped ? 180 : 0);
             await panel.clone().resize({ height: PAGE_MAX_HEIGHT, withoutEnlargement: true }).webp({ quality: QUALITY }).toFile(`${dir}${page}.webp`);
-            if (page === 'cover') await panel.clone().resize({ width: THUMB_WIDTH, withoutEnlargement: true }).webp({ quality: QUALITY }).toFile(`${dir}thumb.webp`);
+            if (page === 'front') await panel.clone().resize({ width: THUMB_WIDTH, withoutEnlargement: true }).webp({ quality: QUALITY }).toFile(`${dir}thumb.webp`);
           }
         }
         logger.info(`cut ${zines.length} sheet${zines.length === 1 ? '' : 's'} into pages`);
