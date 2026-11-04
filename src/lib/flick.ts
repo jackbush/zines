@@ -18,6 +18,8 @@ const TILT_DEG = 2.5;
 const LIFT = 0.012;
 /** Switch to one page at a time when a spread's pages would be under this fraction of a single page's size. */
 const SINGLE_BELOW = 0.7;
+/** Space kept clear around the book (px), with room below for the page label. */
+const MARGIN = 40;
 /** A drag this far (px) is a swipe; anything shorter is a tap. */
 const SWIPE_PX = 40;
 
@@ -119,9 +121,16 @@ export function createFlick(root: HTMLElement, pages: Record<Page, string>): Fli
     book.style.setProperty('--shift', String(shift));
   }
 
+  /** Draws the current view at rest: its pages laid flat, no leaf. */
   function settle() {
-    draw(views[index], views[index], 0, true);
-    status.textContent = label(views[index]);
+    const view = views[index];
+    for (const side of ['left', 'right'] as const) {
+      fill(leaf[side], undefined);
+      leaf[side].hidden = true;
+      fill(under[side], view[side]);
+    }
+    book.style.setProperty('--shift', String(shiftOf(view, single)));
+    status.textContent = label(view);
   }
 
   function tick(now: number) {
@@ -155,7 +164,9 @@ export function createFlick(root: HTMLElement, pages: Record<Page, string>): Fli
 
   /** Sizes the book to the space it has, switching between spreads and single pages. */
   function layout() {
-    const { width, height } = root.getBoundingClientRect();
+    const rect = root.getBoundingClientRect();
+    const width = Math.max(0, rect.width - 2 * MARGIN);
+    const height = Math.max(0, rect.height - 2 * MARGIN);
     const spreadW = Math.min(width / 2, height * PAGE_ASPECT);
     const singleW = Math.min(width, height * PAGE_ASPECT);
     const nowSingle = spreadW < SINGLE_BELOW * singleW;
@@ -170,7 +181,9 @@ export function createFlick(root: HTMLElement, pages: Record<Page, string>): Fli
         turn = null;
       }
     }
-    book.style.setProperty('--page-w', `${single ? singleW : spreadW}px`);
+    const pageW = single ? singleW : spreadW;
+    book.style.setProperty('--page-w', `${pageW}px`);
+    book.style.setProperty('--page-h', `${pageW / PAGE_ASPECT}px`);
     root.dataset.mode = single ? 'single' : 'spread';
     if (!turn) settle();
   }
@@ -191,7 +204,7 @@ export function createFlick(root: HTMLElement, pages: Record<Page, string>): Fli
   };
   const onCancel = () => (down = null);
   const onKey = (e: KeyboardEvent) => {
-    if (e.metaKey || e.ctrlKey || e.altKey || (e.target as HTMLElement).closest('input, textarea, select')) return;
+    if (e.metaKey || e.ctrlKey || e.altKey || (e.target instanceof Element && e.target.closest('input, textarea, select'))) return;
     if (e.key === 'ArrowRight') go(1);
     else if (e.key === 'ArrowLeft') go(-1);
   };

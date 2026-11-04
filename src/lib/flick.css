@@ -1,0 +1,29 @@
+/* The flick viewer (src/lib/flick.ts). It sets --page-w, --page-h and --shift on the book. */
+.flick {
+  position: relative; overflow: hidden; cursor: pointer;
+  user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; touch-action: pan-y;
+}
+.flick-book {
+  position: absolute; left: 50%; top: 50%;
+  width: calc(2 * var(--page-w)); height: var(--page-h);
+  transform: translate(calc(-50% + var(--shift, 0) * var(--page-w)), -50%);
+}
+.flick-slot { position: absolute; top: 0; width: var(--page-w); height: 100%; }
+.flick-slot[data-layer$="-left"] { left: 0; }
+.flick-slot[data-layer$="-right"] { left: var(--page-w); }
+.flick-slot img { display: block; width: 100%; height: 100%; box-shadow: 0 0 0 1px var(--line, #000); }
+
+/* The turning leaf sits over the pages beneath and tilts about the spine. */
+.flick-leaf { z-index: 1; }
+.flick-leaf[hidden] { display: none; }
+.flick-leaf[data-layer="leaf-right"] { transform-origin: 0 50%; }
+.flick-leaf[data-layer="leaf-left"] { transform-origin: 100% 50%; }
+/* The scan line: the leaf's free edge, where it cuts across the page. */
+.flick-scan { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--line, #000); }
+.flick-leaf[data-layer="leaf-right"] .flick-scan { left: calc(var(--scan) - 1px); }
+.flick-leaf[data-layer="leaf-left"] .flick-scan { right: calc(var(--scan) - 1px); }
+
+.flick-label {
+  position: absolute; left: 0; right: 0; bottom: max(8px, env(safe-area-inset-bottom)); margin: 0;
+  text-align: center; font-size: 13px; color: var(--ink-dim, #666); pointer-events: none;
+}
