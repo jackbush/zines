@@ -13,8 +13,8 @@ import manifest from '../src/zines/manifest.js';
 
 /** Pages are scaled down to at most this tall: a spread at full height on a 2× screen. */
 const PAGE_MAX_HEIGHT = 1600;
-/** The shelf's cover thumbnail width: three across a desktop at 2×. */
-const THUMB_WIDTH = 480;
+/** The shelf's cover thumbnail width: a cover two-thirds the height of a large window, at 2×. */
+const THUMB_WIDTH = 960;
 const QUALITY = 85;
 
 export default function panels(): AstroIntegration {

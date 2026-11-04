@@ -7,7 +7,7 @@ import { url } from '../lib/site';
 import { getZines } from '../lib/zines';
 
 const zines = getZines();
-// Intrinsic size of a thumb, so the layout doesn't jump; CSS scales it to the cover width.
+// A thumb's intrinsic size, for its aspect ratio so the layout doesn't jump; CSS sets the real width.
 const THUMB_W = 220;
 const THUMB_H = Math.round(THUMB_W / PAGE_ASPECT);
 // The first row (three covers at most) is in view on load; the rest load lazily.
@@ -18,9 +18,10 @@ const EAGER = 3;
   <Back home hidden />
   <main>
     <h1>Zines</h1>
-    <!-- Every cover draws a shelf line wider than the page and the list clips it, so each row
-         gets one unbroken line at any width, with no JS and a short last row included. -->
-    <ul class="shelves">
+    <!-- Every cover draws a shelf line wider than the page and the list clips it at its padding,
+         so each row gets one unbroken line with a gutter of shelf past its outer covers, at any
+         width and with no JS. The preview "zine" is the last item, wherever it falls. -->
+    <ul class="shelves" style={`--aspect:${PAGE_ASPECT}`}>
       {zines.map((zine, i) => (
         <li>
           <a href={url(zine.slug + '/')} data-zine>
@@ -29,11 +30,9 @@ const EAGER = 3;
           </a>
         </li>
       ))}
-    </ul>
-    <ul class="shelves">
       <li>
         <a href={url('preview/')} data-zine>
-          <span class="cover"><span class="placeholder" style={`aspect-ratio:${PAGE_ASPECT}`}>Preview</span></span>
+          <span class="cover"><span class="placeholder">Preview</span></span>
           <span class="name">Preview</span>
         </a>
       </li>
@@ -53,13 +52,16 @@ const EAGER = 3;
 </script>
 
 <style>
-  main { max-width: 760px; margin: 0 auto; padding: max(14px, env(safe-area-inset-top)) 16px max(32px, env(safe-area-inset-bottom)); }
+  main { padding: max(14px, env(safe-area-inset-top)) 16px max(32px, env(safe-area-inset-bottom)); }
   h1 { margin: 0 0 32px; min-height: 40px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600; }
-  /* Fixed-width covers wrap by themselves: three fit on desktop, two on medium, one on phones. */
   .shelves {
-    --cover: 220px;
-    list-style: none; margin: 0 0 32px; padding: 0;
-    display: flex; flex-wrap: wrap; justify-content: center; gap: 32px;
+    /* Between covers, and the shelf left past the outer ones: a row wraps rather than give either up. */
+    --gutter: 32px;
+    /* Three across the window, growing until a cover is two-thirds of the window's height, never under 220px.
+       Narrower windows fit two or one by wrapping. */
+    --cover: max(220px, min((100vw - 32px - 4 * var(--gutter)) / 3, 66.67dvh * var(--aspect)));
+    list-style: none; margin: 0; padding: 0 var(--gutter);
+    display: flex; flex-wrap: wrap; justify-content: center; column-gap: var(--gutter); row-gap: 48px;
     overflow-x: clip;
   }
   li { width: min(var(--cover), 100%); }
@@ -71,7 +73,7 @@ const EAGER = 3;
     transform: translateX(-50%); background: var(--line); pointer-events: none;
   }
   img, .placeholder { display: block; width: 100%; height: auto; border: 1px solid var(--line); background: #fff; transition: transform 0.12s; }
-  .placeholder { display: grid; place-items: center; border-style: dashed; color: var(--ink-dim); }
+  .placeholder { aspect-ratio: var(--aspect); display: grid; place-items: center; border-style: dashed; color: var(--ink-dim); }
   .name { display: block; margin-top: 14px; font-size: 14px; text-align: center; }
   a:hover img, a:hover .placeholder { transform: translateY(-3px); }
   a:focus-visible { outline: none; }
