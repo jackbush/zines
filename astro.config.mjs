@@ -1,12 +1,13 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 
+import panels from './integrations/panels.ts';
 import versionFile from './integrations/version-file.mjs';
 
 // Published at https://jackbush.github.io/zines/
 // `base` must match the repo name exactly, or every asset 404s.
 export default defineConfig({
-  integrations: [versionFile()],
+  integrations: [panels(), versionFile()],
 
   site: 'https://jackbush.github.io',
   base: '/zines',

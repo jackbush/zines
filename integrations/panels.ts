@@ -1,14 +1,15 @@
 // Cuts every sheet in src/zines/ into its eight pages before Astro starts, so visitors download
 // small WebPs instead of an A3 PNG. They land in src/generated/panels/<slug>/ (gitignored), where
 // pages import them through Vite and get content-hashed URLs: a new version of a sheet gets new
-// URLs, so nobody sees a cached old one. Restart `astro dev` after changing a sheet.
+// URLs, so nobody sees a cached old one. `astro dev` restarts itself when a sheet or the manifest changes.
 
 import { existsSync, mkdirSync, rmSync } from 'node:fs';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { fileURLToPath } from 'node:url';
 import type { AstroIntegration } from 'astro';
 import sharp from 'sharp';
 import { parseManifest } from '../src/lib/manifest';
 import { PAGES, isSheetShaped, panelRect } from '../src/lib/sheet';
+import manifest from '../src/zines/manifest.js';
 
 /** Pages are scaled down to at most this tall: a spread at full height on a 2× screen. */
 const PAGE_MAX_HEIGHT = 1600;
@@ -20,18 +21,17 @@ export default function panels(): AstroIntegration {
   return {
     name: 'panels',
     hooks: {
-      'astro:config:setup': async ({ config, logger }) => {
+      'astro:config:setup': async ({ config, logger, addWatchFile }) => {
         const zinesDir = new URL('src/zines/', config.root);
         const outDir = new URL('src/generated/panels/', config.root);
-        const manifestUrl = new URL('manifest.js', zinesDir);
-        // A query defeats Node's module cache, so a dev restart sees manifest edits.
-        const { default: raw } = await import(`${pathToFileURL(fileURLToPath(manifestUrl)).href}?t=${Date.now()}`);
-        const zines = parseManifest(raw);
+        addWatchFile(new URL('manifest.js', zinesDir));
+        const zines = parseManifest(manifest);
 
         rmSync(outDir, { recursive: true, force: true });
         for (const zine of zines) {
           const source = fileURLToPath(new URL(zine.file, zinesDir));
           if (!existsSync(source)) throw new Error(`src/zines/manifest.js: "${zine.name}" needs src/zines/${zine.file}.`);
+          addWatchFile(source);
           // Decode once; every page is cut from the same raw pixels.
           const { data, info } = await sharp(source).raw().toBuffer({ resolveWithObject: true });
           if (!isSheetShaped(info.width, info.height)) {
