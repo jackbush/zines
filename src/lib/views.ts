@@ -54,17 +54,21 @@ export function createView(stage: HTMLElement, mode: Mode, sources: Sources, opt
   };
 }
 
-/** Wires up a ModeToggle: marks the pressed button and calls `change` when another is picked. */
-export function bindToggle(toggle: HTMLElement, mode: Mode, change: (mode: Mode) => void) {
+/**
+ * Wires up a ModeToggle: marks the pressed button and calls `change` when another is picked.
+ * Returns a function that presses a button from code, without calling `change`.
+ */
+export function bindToggle(toggle: HTMLElement, mode: Mode, change: (mode: Mode) => void): (mode: Mode) => void {
   const press = (m: Mode) => {
+    mode = m;
     for (const b of toggle.querySelectorAll<HTMLElement>('button[data-mode]')) b.setAttribute('aria-pressed', String(b.dataset.mode === m));
   };
   press(mode);
   toggle.addEventListener('click', (e) => {
     const next = (e.target as Element).closest<HTMLElement>('button[data-mode]')?.dataset.mode as Mode | undefined;
     if (!next || next === mode) return;
-    mode = next;
-    press(mode);
-    change(mode);
+    press(next);
+    change(next);
   });
+  return press;
 }

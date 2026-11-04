@@ -27,7 +27,13 @@ const EAGER = PER_ROW_MAX;
 
 <BaseLayout title="Zines">
   <Fragment set:html={`<style>${perRow}</style>`} />
-  <TopBar home backHidden>Zines</TopBar>
+  <Fragment slot="head">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen&display=swap" />
+  </Fragment>
+  <!-- "Zines" is 3.25em wide in Silkscreen (measured in Chrome). -->
+  <TopBar home backHidden heroWidth={3.25}>Zines</TopBar>
   <main>
     <!-- Every cover draws a shelf line wider than the shelf, and the shelf clips it at its padding,
          so each row gets one unbroken line, a short last row included, with no JS. The preview
@@ -80,13 +86,13 @@ const EAGER = PER_ROW_MAX;
   /* The shelf: 200vw wide, centred on the cover, so a row's lines merge and the shelf trims them. */
   .cover::after {
     content: ''; position: absolute; top: 100%; left: 50%; width: 200vw; height: 6px;
-    transform: translateX(-50%); background: var(--line); pointer-events: none;
+    transform: translateX(-50%); background: var(--ink); pointer-events: none;
   }
-  img, .placeholder { display: block; width: 100%; height: auto; border: 1px solid var(--line); background: #fff; transition: transform 0.12s; }
+  img, .placeholder { display: block; width: 100%; height: auto; border: 1px solid var(--ink); background: var(--paper); transition: transform 0.12s; }
   .placeholder { aspect-ratio: var(--aspect); display: grid; place-items: center; border-style: dashed; color: var(--ink-dim); }
   .name { display: block; margin-top: 14px; font-size: 14px; text-align: center; }
   a:hover img, a:hover .placeholder { transform: translateY(-3px); }
   a:focus-visible { outline: none; }
-  a:focus-visible img, a:focus-visible .placeholder { outline: 2px solid var(--line); outline-offset: 3px; }
+  a:focus-visible img, a:focus-visible .placeholder { outline: 2px solid var(--ink); outline-offset: 3px; }
   @media (prefers-reduced-motion: reduce) { img, .placeholder { transition: none; } }
 </style>

@@ -1,7 +1,7 @@
 ---
-// A private check of a sheet before it's published: pick or drop a PNG and read it as a flick,
-// a scroll or the flat sheet. It's sliced in the browser with the same map as the build, and
-// keeps nothing: no storage, no upload, and every load starts empty.
+// A private check of a sheet before it's published: pick or drop a PNG and read it as the flat
+// sheet, a scroll or a flick. It opens on a sample sheet, flat. It's sliced in the browser with the
+// same map as the build, and keeps nothing: no storage, no upload, and every load starts afresh.
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ModeToggle from '../components/ModeToggle.astro';
 import TopBar from '../components/TopBar.astro';
@@ -10,7 +10,7 @@ import { site } from '../lib/site';
 
 <BaseLayout title={`Preview | ${site.name}`}>
   <meta name="robots" content="noindex" slot="head" />
-  <main id="app" data-empty>
+  <main>
     <TopBar centred={false}>
       <span class="title">
         <span class="name" id="name">Preview</span>
@@ -21,7 +21,6 @@ import { site } from '../lib/site';
     <input id="file" type="file" accept="image/png" hidden />
     <div class="stage" id="stage">
       <p class="note" id="note" role="status" hidden></p>
-      <button class="zone" id="zone" type="button">Drop an A3 landscape PNG here, or choose a file</button>
     </div>
   </main>
   <div class="drop" id="drop" aria-hidden="true" hidden>Drop to preview</div>
@@ -31,9 +30,9 @@ import { site } from '../lib/site';
   import { isSheetShaped } from '../lib/sheet';
   import { slice, type Sheet } from '../lib/slice';
   import { bindToggle, createView, type Mode } from '../lib/views';
+  import sample from '../assets/preview-sample.png?url';
 
   const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
-  const app = $('app');
   const input = $<HTMLInputElement>('file');
   const name = $('name');
   const update = $('update');
@@ -42,7 +41,7 @@ import { site } from '../lib/site';
   const stage = $('stage');
   const drop = $('drop');
 
-  let mode: Mode = 'flick';
+  let mode: Mode = 'flat';
   let sheet: Sheet | null = null;
   let viewer: { destroy(): void } | null = null;
   // Counts uploads, decided when each starts: a slow decode that finishes after a newer file was
@@ -64,7 +63,8 @@ import { site } from '../lib/site';
     note.hidden = !text;
   }
 
-  async function load(file: File) {
+  /** Shows `file` in `view`: the sample opens flat, your own files in flick. */
+  async function load(file: File, view: Mode) {
     const mine = ++generation;
     let next: Sheet;
     try {
@@ -78,7 +78,8 @@ import { site } from '../lib/site';
     unmount();
     sheet?.dispose();
     sheet = next;
-    delete app.dataset.empty;
+    mode = view;
+    toggleTo(mode);
     name.textContent = name.title = file.name;
     update.hidden = toggle.hidden = false;
     say(isSheetShaped(next.width, next.height) ? '' : 'Not A-series landscape: pages will be stretched');
@@ -89,13 +90,16 @@ import { site } from '../lib/site';
     const file = input.files?.[0];
     // Cleared so choosing the same file again still counts as a change.
     input.value = '';
-    if (file) load(file);
+    if (file) load(file, 'flick');
   });
-  for (const id of ['zone', 'update']) $(id).addEventListener('click', () => input.click());
-  bindToggle(toggle, mode, (next) => {
+  update.addEventListener('click', () => input.click());
+  const toggleTo = bindToggle(toggle, mode, (next) => {
     mode = next;
     mount();
   });
+  fetch(sample)
+    .then((r) => r.blob())
+    .then((blob) => load(new File([blob], 'sample.png', { type: blob.type }), 'flat'));
   // Dropping a file works anywhere, at any time. dragenter and dragleave also fire for the page's
   // children, so a counter tells when the drag has really left.
   let dragging = 0;
@@ -112,7 +116,7 @@ import { site } from '../lib/site';
     e.preventDefault();
     setDragging(0);
     const file = e.dataTransfer?.files[0];
-    if (file) load(file);
+    if (file) load(file, 'flick');
   });
 </script>
 
@@ -124,19 +128,14 @@ import { site } from '../lib/site';
   .update { flex: none; margin-left: 6px; padding: 0; border: 0; background: none; color: var(--ink-dim); font: inherit; font-weight: 400; text-decoration: underline; cursor: pointer; }
   .update:hover { color: var(--ink); }
   .update[hidden] { display: none; }
-  .update:focus-visible, .zone:focus-visible { outline: 2px solid var(--line); outline-offset: 2px; }
+  .update:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 
-  .stage { position: relative; min-height: 0; }
+  .stage { position: relative; min-height: 0; background: var(--viewer); }
   .note { position: absolute; z-index: 1; top: 8px; left: 16px; right: 16px; margin: 0; font-size: 13px; color: var(--ink-dim); }
   .note[hidden] { display: none; }
-  .zone {
-    position: absolute; inset: 16px; padding: 16px; display: grid; place-items: center; text-align: center;
-    border: 1px dashed var(--line); background: #fff; color: var(--ink-dim); font: inherit; cursor: pointer;
-  }
-  main:not([data-empty]) .zone { display: none; }
   .drop {
     position: fixed; inset: 8px; z-index: 4; display: grid; place-items: center; pointer-events: none;
-    border: 2px dashed var(--line); background: rgb(255 255 255 / 0.85);
+    border: 2px dashed var(--ink); background: color-mix(in srgb, var(--paper) 85%, transparent);
   }
   .drop[hidden] { display: none; }
 </style>

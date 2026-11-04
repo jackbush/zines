@@ -1,6 +1,7 @@
 ---
 // The bar across the top of every page: the back arrow, the title, and the page's controls on the
-// right (slot "actions"). It's always white, whatever colour the page below it is.
+// right (slot "actions"). It's always paper-coloured, whatever colour the page below it is. The
+// library's is the `hero` version: a big Silkscreen title (the page loads the font) and no rule.
 import Back from './Back.astro';
 
 interface Props {
@@ -9,12 +10,15 @@ interface Props {
   /** Passed to Back: see Back.astro. */
   home?: boolean;
   backHidden?: boolean;
+  /** Makes this the hero bar: the title's width in ems, in Silkscreen, so it can be kept under two-thirds of the screen. */
+  heroWidth?: number;
 }
 
-const { centred = true, home = false, backHidden = false } = Astro.props;
+const { centred = true, home = false, backHidden = false, heroWidth } = Astro.props;
+const hero = heroWidth !== undefined;
 ---
 
-<header class:list={['bar', { centred }]}>
+<header class:list={['bar', { centred, hero }]} style={hero ? `--hero-em:${heroWidth}` : undefined}>
   <Back home={home} hidden={backHidden} />
   <h1><slot /></h1>
   <div class="actions"><slot name="actions" /></div>
@@ -24,7 +28,7 @@ const { centred = true, home = false, backHidden = false } = Astro.props;
   .bar {
     display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px;
     min-height: 64px; padding: max(12px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) 12px max(14px, env(safe-area-inset-left));
-    border-bottom: 1px solid var(--line); background: #fff;
+    border-bottom: 1px solid var(--ink); background: var(--paper);
   }
   /* Equal side columns keep the title on the page's centre line, room permitting. */
   .centred { grid-template-columns: 1fr minmax(0, auto) 1fr; }
@@ -32,5 +36,12 @@ const { centred = true, home = false, backHidden = false } = Astro.props;
   h1 { grid-column: 2; margin: 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 16px; font-weight: 600; }
   .actions { grid-column: 3; justify-self: end; display: flex; align-items: center; }
   /* Phones: the title takes whatever the arrow and controls leave. */
-  @media (max-width: 599px) { .centred { grid-template-columns: auto minmax(0, 1fr) auto; } }
+  @media (max-width: 599px) { .centred:not(.hero) { grid-template-columns: auto minmax(0, 1fr) auto; } }
+
+  .hero { border-bottom: 0; }
+  /* 120px, or smaller where that would be over two-thirds of the screen. */
+  .hero h1 {
+    font-family: 'Silkscreen', var(--font); font-weight: 400; line-height: 1.1; overflow: visible;
+    font-size: min(120px, 66.67vw / var(--hero-em));
+  }
 </style>

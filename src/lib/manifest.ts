@@ -26,7 +26,7 @@ const entrySchema = z
     file: z.string().regex(/\.png$/i, 'must be a .png').optional(),
     /** Where to buy a copy (a Ko-fi shop item). Shows "Buy a copy" on the zine's page. */
     buy: z.url().optional(),
-    /** The zine page's colour below the top bar, as hex (#f4efe6). Defaults to white. */
+    /** The zine page's colour below the top bar, as hex (#f4efe6). Defaults to the site's paper colour. */
     background: z.string().regex(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i, 'a hex colour like #f4efe6').optional(),
   })
   .strict();
@@ -36,7 +36,7 @@ export interface Zine {
   slug: string;
   file: string;
   buy?: string;
-  background: string;
+  background?: string;
 }
 
 /** Parses the manifest, filling in slugs and files. Throws with every problem listed. */
@@ -53,6 +53,6 @@ export function parseManifest(raw: unknown): Zine[] {
     if (RESERVED.has(slug)) throw new Error(`src/zines/manifest.js: "${slug}" is taken by the site; give "${entry.name}" another slug.`);
     if (seen.has(slug)) throw new Error(`src/zines/manifest.js: two zines have the slug "${slug}".`);
     seen.add(slug);
-    return { name: entry.name, slug, file: entry.file ?? `${slug}.png`, buy: entry.buy, background: entry.background ?? '#fff' };
+    return { name: entry.name, slug, file: entry.file ?? `${slug}.png`, buy: entry.buy, background: entry.background };
   });
 }

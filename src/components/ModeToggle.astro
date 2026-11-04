@@ -11,19 +11,16 @@ const names = { flick: 'Flick', scroll: 'Scroll', flat: 'Flat' };
 ---
 
 <div class="toggle" id="toggle" role="group" aria-label="View" hidden={hidden}>
-  {MODES.map((mode) => <button type="button" data-mode={mode} aria-pressed="false">{names[mode]}</button>)}
+  {MODES.map((mode) => <button class="btn" type="button" data-mode={mode} aria-pressed="false">{names[mode]}</button>)}
 </div>
 
 <style>
+  /* The buttons are BaseLayout's .btn, joined into one strip with rounded outer corners. */
   .toggle { display: flex; flex: none; }
   .toggle[hidden] { display: none; }
-  button {
-    height: 32px; padding: 0 10px; display: inline-flex; align-items: center;
-    border: 1px solid var(--line); background: #fff; color: var(--ink); font: inherit; font-size: 14px; cursor: pointer;
-  }
-  button + button { margin-left: -1px; }
-  button:hover { background: var(--hover); }
-  button[aria-pressed='true'] { background: var(--ink); color: #fff; }
-  button:focus-visible { position: relative; outline: 2px solid var(--line); outline-offset: 2px; }
-  @media (max-width: 599px) { button { padding: 0 7px; font-size: 13px; } }
+  .btn + .btn { margin-left: -1px; }
+  .btn:not(:first-child) { border-top-left-radius: 0; border-bottom-left-radius: 0; }
+  .btn:not(:last-child) { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+  /* The chosen view looks like .btn-fill. */
+  .btn[aria-pressed='true'] { background: var(--ink); color: var(--paper); }
 </style>

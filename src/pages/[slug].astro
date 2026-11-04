@@ -19,9 +19,9 @@ const sources: Sources = { pages: zine.pages, sheet: zine.sheet };
   <main>
     <TopBar>
       {zine.name}
-      {zine.buy && <a class="buy" href={zine.buy} rel="noopener" slot="actions">Buy a copy</a>}
+      {zine.buy && <a class="btn btn-fill" href={zine.buy} rel="noopener" slot="actions">Buy a copy</a>}
     </TopBar>
-    <div class="stage" id="stage" role="region" aria-label={zine.name} style={`background:${zine.background}`} data-sources={JSON.stringify(sources)}></div>
+    <div class="stage" id="stage" role="region" aria-label={zine.name} style={zine.background && `background:${zine.background}`} data-sources={JSON.stringify(sources)}></div>
   </main>
 </BaseLayout>
 
@@ -35,10 +35,4 @@ const sources: Sources = { pages: zine.pages, sheet: zine.sheet };
 <style>
   main { height: 100dvh; display: grid; grid-template-rows: auto 1fr; }
   .stage { position: relative; min-height: 0; }
-  .buy {
-    height: 32px; padding: 0 12px; display: inline-flex; align-items: center; white-space: nowrap;
-    border: 1px solid var(--line); background: #fff; color: var(--ink); font-size: 14px; text-decoration: none;
-  }
-  .buy:hover { background: var(--hover); }
-  .buy:focus-visible { outline: 2px solid var(--line); outline-offset: 2px; }
 </style>

@@ -2,4 +2,4 @@
 .view { position: absolute; inset: 0; }
 /* The flat view: the sheet, scaled to the largest size that fits inside a margin, centred. */
 .flat { display: grid; place-items: center; padding: 16px; container-type: size; }
-.flat img { display: block; width: min(100cqw, 100cqh * var(--sheet-aspect)); height: auto; box-shadow: 0 0 0 1px var(--line, #000); }
+.flat img { display: block; width: min(100cqw, 100cqh * var(--sheet-aspect)); height: auto; box-shadow: 0 0 0 1px var(--ink); }

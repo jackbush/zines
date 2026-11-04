@@ -39,9 +39,10 @@ const { href = url(), label = 'All zines', hidden = false, home = false } = Astr
   .back {
     grid-column: 1; justify-self: start;
     width: 40px; height: 40px; padding: 9px; display: block;
-    border: 1px solid #000; border-radius: 50%; background: #fff; color: #000;
+    border: 1px solid var(--ink); border-radius: 50%; background: var(--paper); color: var(--ink);
   }
   .back[hidden] { display: none; }
   .back svg { width: 100%; height: 100%; display: block; }
-  .back:focus-visible { outline: 2px solid #000; outline-offset: 2px; }
+  .back:hover { background: var(--hover); }
+  .back:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 </style>
