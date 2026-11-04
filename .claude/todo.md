@@ -70,6 +70,22 @@ Who does each step: I keep anything where the details need judgement (geometry, 
 - Placeholder One's `buy` is `https://ko-fi.com/`, only to show the button. Replace it with real Ko-fi links.
 - No share image or PNG home-screen icons yet (BaseLayout omits og:image without one).
 
+## Later
+
+- [ ] **PDF sheets.** Accept an A3 landscape PDF wherever a PNG works. Render its first page to an image, then slice it as now.
+  - **`/preview`:** load pdf.js (`pdfjs-dist`) only on this page.
+    - Accept `application/pdf` as well as `image/png` in the picker and on drop.
+    - Render page 1 to a canvas at roughly 150–300 dpi for A3, then pass it to `slice()`. It already takes anything `createImageBitmap` accepts, so pass a canvas or Blob.
+    - Flat shows the rendered image.
+    - Keep the stale-upload guard and object-URL cleanup.
+  - **Build:** let the manifest's `file` be `.png` or `.pdf`. In `integrations/panels.ts`, rasterise a PDF to raw pixels before cutting. sharp's prebuilt binaries can't read PDF, so pick one:
+    - pdf.js in Node with `@napi-rs/canvas`: no system packages, works on Actions as-is.
+    - `pdftoppm` (poppler) installed in the deploy workflow.
+    
+    Prefer the first unless it's slow.
+  - **Shared:** keep the render resolution in one place, so `/preview` and the build match.
+  - **Done when:** a vector PDF and its PNG export produce the same pages in both places, `npm run check` passes, and the docs (README "Add a zine", CLAUDE.md) say PDFs work.
+
 ## Review
 
 - Live at https://jackbush.github.io/zines/; deploys from `main` via the Pages workflow.
