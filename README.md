@@ -27,7 +27,7 @@ bottom row:             5  6  back  cover
 ## Reading
 
 - **Library** (`/zines/`): shelves of covers. The last one holds a link to `/zines/preview/`.
-- **Zine pages**: the toggle at the top right switches between Flick, Scroll and Flat (the whole sheet as printed). In Flick, click or tap the right half (or →, or swipe left) for the next page, the left half to go back. Phones show one page at a time.
-- **Preview** (`/zines/preview/`): drop in a sheet to read it in any of the three views before publishing, with page numbers shown. **(update)** after the file name swaps in a new version. Nothing is saved or uploaded.
+- **Zine pages**: click or tap the right half (or →, or swipe left) for the next page, the left half to go back. Phones show one page at a time. **Buy a copy** sits at the top right when the zine has a `buy` link.
+- **Preview** (`/zines/preview/`): drop in a sheet to read it as Flat (the whole sheet), Scroll or Flick before publishing, with page numbers shown. **(update)** after the file name swaps in a new version. Nothing is saved or uploaded.
 
 A zine's `background` in the manifest (hex, e.g. `'#f4efe6'`) colours its page below the top bar.

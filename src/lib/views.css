@@ -1,5 +1,5 @@
 /* src/lib/views.ts. Each view fills its stage. */
 .view { position: absolute; inset: 0; }
-/* The flat view: the sheet, fitted inside the space with a margin. */
-.flat { display: flex; align-items: center; justify-content: center; padding: 24px; }
-.flat img { display: block; max-width: 100%; max-height: 100%; box-shadow: 0 0 0 1px var(--line, #000); }
+/* The flat view: the sheet, scaled to the largest size that fits inside a margin, centred. */
+.flat { display: grid; place-items: center; padding: 16px; container-type: size; }
+.flat img { display: block; width: min(100cqw, 100cqh * var(--sheet-aspect)); height: auto; box-shadow: 0 0 0 1px var(--line, #000); }

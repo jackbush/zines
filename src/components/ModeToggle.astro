@@ -1,5 +1,5 @@
 ---
-// The Flick / Scroll / Flat switch on the right of the top bar. src/lib/views.ts's bindToggle drives it.
+// /preview's Flat / Scroll / Flick switch, on the right of the top bar. src/lib/views.ts's bindToggle drives it.
 import { MODES } from '../lib/views';
 
 interface Props {
@@ -22,7 +22,7 @@ const names = { flick: 'Flick', scroll: 'Scroll', flat: 'Flat' };
     border: 1px solid var(--line); background: #fff; color: var(--ink); font: inherit; font-size: 14px; cursor: pointer;
   }
   button + button { margin-left: -1px; }
-  button:hover { background: var(--ink); color: #fff; }
+  button:hover { background: var(--hover); }
   button[aria-pressed='true'] { background: var(--ink); color: #fff; }
   button:focus-visible { position: relative; outline: 2px solid var(--line); outline-offset: 2px; }
   @media (max-width: 599px) { button { padding: 0 7px; font-size: 13px; } }

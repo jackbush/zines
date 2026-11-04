@@ -1,13 +1,13 @@
-// The three ways to read a zine, switched by the top bar's toggle: flick (one spread at a time),
-// scroll (every view stacked) and flat (the sheet itself, as printed). Zine pages and /preview
-// both build their reader from here.
+// The ways to read a zine: flat (the sheet itself, as printed), scroll (every view stacked) and
+// flick (one spread at a time). Zine pages use flick; /preview's toggle switches between all three.
 
 import './views.css';
 import { createFlick } from './flick';
 import { createScroll } from './scroll';
-import type { Page } from './sheet';
+import { SHEET_ASPECT, type Page } from './sheet';
 
-export const MODES = ['flick', 'scroll', 'flat'] as const;
+/** In the toggle's order. */
+export const MODES = ['flat', 'scroll', 'flick'] as const;
 export type Mode = (typeof MODES)[number];
 
 export interface Sources {
@@ -16,10 +16,13 @@ export interface Sources {
   sheet: string;
 }
 
-/** Fills `root` with the sheet as one image, fitted to the space. */
+/** Fills `root` with the sheet as one image, as large as fits, centred. */
 function createFlat(root: HTMLElement, sheet: string) {
   root.classList.add('flat');
+  // Sized by the sheet's shape: A-series until it loads, then its own, as an upload may differ.
+  root.style.setProperty('--sheet-aspect', String(SHEET_ASPECT));
   const img = new Image();
+  img.onload = () => root.style.setProperty('--sheet-aspect', String(img.naturalWidth / img.naturalHeight));
   img.src = sheet;
   img.alt = 'The whole sheet, as printed';
   root.append(img);
