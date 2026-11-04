@@ -48,13 +48,13 @@ Static Astro site at `https://jackbush.github.io/zines/`, deployed to GitHub Pag
 
 Who does each step: I keep anything where the details need judgement (geometry, animation, layout) and hand out the well-specified mechanical work. I review every handed-out diff, and only hand work out if you say so. Otherwise I'll just do it all myself.
 
-- [ ] 1. `git init`; scaffold Astro and TypeScript; set the config, layouts, version file and deploy workflow, copied and trimmed from Glimmers. **Sonnet 5.5**: a mechanical port with a clear source.
-- [ ] 2. Placeholder sheet: a Node script that writes an SVG and turns it into a PNG with sharp. It makes an A3 landscape sheet at 150 dpi with big numbered panels, the top row upside down, and fold and cut lines. Plus 3–4 copies with different names, so there are enough to test the shelves. **Haiku 4.5**: a small self-contained script.
-- [ ] 3. `sheet.ts` (panel map and slicing maths), the build-time slicer, the manifest schema and slug derivation. **Opus 5.5** (me): the shared geometry everything else depends on.
-- [ ] 4. Flick viewer component: spreads and single pages, input handling, the scan-line turn and how it handles interruptions. **Opus 5.5** (me): animation and the interruption cases.
-- [ ] 5. Library index (shelves, the preview zine, back button) and the `[slug]` zine page with the buy link. **Sonnet 5.5**: wireframe layout to a clear spec.
-- [ ] 6. `/preview`: upload, browser-side slicing with `sheet.ts`, the top bar, the Scroll/Flick toggle. **Sonnet 5.5**, reusing the step 4 viewer.
-- [ ] 7. Check it in the browser at desktop and phone widths:
+- [x] 1. `git init`; scaffold Astro and TypeScript; set the config, layouts, version file and deploy workflow, copied and trimmed from Glimmers. **Sonnet 5.5**: a mechanical port with a clear source.
+- [x] 2. Placeholder sheet: a Node script that writes an SVG and turns it into a PNG with sharp. It makes an A3 landscape sheet at 150 dpi with big numbered panels, the top row upside down, and fold and cut lines. Plus 3–4 copies with different names, so there are enough to test the shelves. **Haiku 4.5**: a small self-contained script.
+- [x] 3. `sheet.ts` (panel map and slicing maths), the build-time slicer, the manifest schema and slug derivation. **Opus 5.5** (me): the shared geometry everything else depends on.
+- [x] 4. Flick viewer component: spreads and single pages, input handling, the scan-line turn and how it handles interruptions. **Opus 5.5** (me): animation and the interruption cases.
+- [x] 5. Library index (shelves, the preview zine, back button) and the `[slug]` zine page with the buy link. **Sonnet 5.5**: wireframe layout to a clear spec.
+- [x] 6. `/preview`: upload, browser-side slicing with `sheet.ts`, the top bar, the Scroll/Flick toggle. **Sonnet 5.5**, reusing the step 4 viewer.
+- [x] 7. Check it in the browser at desktop and phone widths:
   - The panel order matches the placeholder.
   - Clicking mid-turn behaves.
   - `?from=home` works on all three back buttons.
@@ -62,12 +62,24 @@ Who does each step: I keep anything where the details need judgement (geometry, 
   - The build passes `astro check`.
   
   **Opus 5.5** (me).
-- [ ] 8. You create the `jackbush/zines` repo and enable Pages; I push when you say so.
+- [x] 8. You create the `jackbush/zines` repo and enable Pages; I push when you say so.
 
 ## Open
 
-- The panel map assumes the standard fold. Check the placeholder against one of your real sheets before relying on it.
+- The panel map assumes the standard fold. Check it against one of your real sheets.
+- Placeholder One's `buy` is `https://ko-fi.com/`, only to show the button. Replace it with real Ko-fi links.
+- No share image or PNG home-screen icons yet (BaseLayout omits og:image without one).
 
 ## Review
 
-(to fill in when done)
+- Live at https://jackbush.github.io/zines/; deploys from `main` via the Pages workflow.
+- Checked in headless Chrome at 1280×800 and 375×800:
+  - library shelves, including `?from=home` on the links and the back button;
+  - zine pages in spreads and single pages;
+  - turning back, and three quick presses landing on the right page;
+  - `/preview` upload, flick and scroll, replacing a file, and the bar on phones.
+- Not checked: real touch swipes on a device, drag-and-drop by hand, Safari.
+- Changes from the plan:
+  - The top row is 4 3 2 1, not 5 4 3 2: the standard fold has pages 1–6.
+  - I wrote the zine page and `Flick.astro` with the viewer so I could test it.
+  - I rewrote the placeholder script after Haiku's version overflowed its panels.
