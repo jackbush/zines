@@ -5,7 +5,7 @@ import manifest from '../zines/manifest.js';
 import { parseManifest, type Zine } from './manifest';
 import { PAGES, type Page } from './sheet';
 
-const PANELS = import.meta.glob<string>('/src/generated/panels/*/*.webp', { eager: true, query: '?url', import: 'default' });
+const PANELS = import.meta.glob<string>('/src/generated/panels/*/*.{webp,png}', { eager: true, query: '?url', import: 'default' });
 
 export interface ZineEntry extends Zine {
   pages: Record<Page, string>;
@@ -13,19 +13,22 @@ export interface ZineEntry extends Zine {
   thumb: string;
   /** The whole sheet, for the flat view. */
   sheet: string;
+  /** The original sheet, when the manifest allows downloading it. */
+  downloadUrl?: string;
 }
 
-function panel(slug: string, name: string): string {
-  const src = PANELS[`/src/generated/panels/${slug}/${name}.webp`];
-  if (!src) throw new Error(`No ${name}.webp for "${slug}": the panels integration should have cut it.`);
+function panel(slug: string, file: string): string {
+  const src = PANELS[`/src/generated/panels/${slug}/${file}`];
+  if (!src) throw new Error(`No ${file} for "${slug}": the panels integration should have made it.`);
   return src;
 }
 
 export function getZines(): ZineEntry[] {
   return parseManifest(manifest).map((z) => ({
     ...z,
-    pages: Object.fromEntries(PAGES.map((p) => [p, panel(z.slug, p)])) as Record<Page, string>,
-    thumb: panel(z.slug, 'thumb'),
-    sheet: panel(z.slug, 'sheet'),
+    pages: Object.fromEntries(PAGES.map((p) => [p, panel(z.slug, `${p}.webp`)])) as Record<Page, string>,
+    thumb: panel(z.slug, 'thumb.webp'),
+    sheet: panel(z.slug, 'sheet.webp'),
+    downloadUrl: z.download ? panel(z.slug, 'download.png') : undefined,
   }));
 }

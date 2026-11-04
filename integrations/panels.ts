@@ -1,9 +1,10 @@
 // Cuts every sheet in src/zines/ into its eight pages before Astro starts, plus a web-sized copy
-// of the whole sheet for the flat view, so visitors download small WebPs instead of an A3 PNG. They land in src/generated/panels/<slug>/ (gitignored), where
+// of the whole sheet for the flat view, so visitors download small WebPs instead of an A3 PNG.
+// The original PNG goes in too, untouched, only for zines with `download` on. They land in src/generated/panels/<slug>/ (gitignored), where
 // pages import them through Vite and get content-hashed URLs: a new version of a sheet gets new
 // URLs, so nobody sees a cached old one. `astro dev` restarts itself when a sheet or the manifest changes.
 
-import { existsSync, mkdirSync, rmSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, rmSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import type { AstroIntegration } from 'astro';
 import sharp from 'sharp';
@@ -42,6 +43,7 @@ export default function panels(): AstroIntegration {
           const raw = { raw: { width: info.width, height: info.height, channels: info.channels } };
           const dir = fileURLToPath(new URL(`${zine.slug}/`, outDir));
           mkdirSync(dir, { recursive: true });
+          if (zine.download) copyFileSync(source, `${dir}download.png`);
           await sharp(data, raw).resize({ width: SHEET_WIDTH, withoutEnlargement: true }).webp({ quality: QUALITY }).toFile(`${dir}sheet.webp`);
           for (const page of PAGES) {
             const { flipped, ...rect } = panelRect(page, info.width, info.height);

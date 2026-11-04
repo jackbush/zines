@@ -34,7 +34,7 @@ const hero = heroWidth !== undefined;
   .centred { grid-template-columns: 1fr minmax(0, auto) 1fr; }
   .centred h1 { text-align: center; }
   h1 { grid-column: 2; margin: 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 16px; font-weight: 600; }
-  .actions { grid-column: 3; justify-self: end; display: flex; align-items: center; }
+  .actions { grid-column: 3; justify-self: end; display: flex; align-items: center; gap: 8px; }
   /* Phones: the title takes whatever the arrow and controls leave. */
   @media (max-width: 599px) { .centred:not(.hero) { grid-template-columns: auto minmax(0, 1fr) auto; } }
 

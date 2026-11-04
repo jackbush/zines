@@ -4,7 +4,7 @@
 - **Zine pages**: click or tap the right half (or →, or swipe left) for the next page, the left half to go back. Phones show one page at a time. **Buy a copy** sits at the top right when the zine has a `buy` link.
 - **Preview** (`/zines/preview/`): opens on a sample sheet, flat. Drop in or choose a sheet to read it as Flat (the whole sheet), Scroll or Flick before publishing, with page numbers shown. Your own files open in Flick. **(update)** after the file name swaps in a new version. Nothing is saved or uploaded.
 
-A zine's `background` in the manifest (hex, e.g. `'#f4efe6'`) colours its page below the top bar (otherwise it's the same creamy grey as `/preview`).
+In the manifest, `buy` (a Ko-fi link) adds **Buy a copy** and `download: true` adds **Download** (the original sheet, to print) at the top right of the zine's page. A zine's `background` (hex, e.g. `'#f4efe6'`) colours its page below the top bar (otherwise it's the same creamy grey as `/preview`).
 
 ## Run locally
 
