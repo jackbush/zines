@@ -175,8 +175,10 @@ import { site } from '../lib/site';
     border: 2px dashed var(--line); background: rgb(255 255 255 / 0.85);
   }
 
+  /* Phones: the thumbnail and name get the first row, the buttons wrap onto a second. */
   @media (max-width: 599px) {
     .more { display: none; }
-    .bar { gap: 8px; }
+    .bar { height: auto; min-height: 40px; flex-wrap: wrap; gap: 8px; }
+    .name { flex-basis: calc(100% - 64px); }
   }
 </style>
