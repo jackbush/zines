@@ -2,13 +2,8 @@
 // the spine, lone pages centred. Narrow screens get one page per row instead of spreads.
 
 import './scroll.css';
+import { MARGIN, fitPage } from './fit';
 import { PAGES, PAGE_ASPECT, VIEWS, pageAlt, pageName, type Page } from './sheet';
-
-/** Below this width (px) the view stacks single pages. */
-const NARROW_PX = 600;
-/** Space around the stack (px), and below each view for its label. */
-const MARGIN = 16;
-const LABEL = 24;
 
 export interface Scroll {
   /** Removes the view's listeners and markup. */
@@ -45,6 +40,7 @@ export function createScroll(root: HTMLElement, pages: Record<Page, string>, { l
         figure.append(row);
         if (labels) {
           const caption = document.createElement('figcaption');
+          caption.className = 'view-label';
           caption.textContent = group.map(pageName).join('–');
           figure.append(caption);
         }
@@ -55,14 +51,12 @@ export function createScroll(root: HTMLElement, pages: Record<Page, string>, { l
 
   /** Sizes the pages to fit the width, and short enough that a view fits the height. */
   function layout() {
-    const { clientWidth: width, clientHeight: height } = root;
-    const nowNarrow = width < NARROW_PX;
-    if (nowNarrow !== narrow) {
-      narrow = nowNarrow;
+    const { across, pageW } = fitPage(root.clientWidth, root.clientHeight, labels);
+    if ((across === 1) !== narrow) {
+      narrow = across === 1;
       build();
     }
-    const across = narrow ? 1 : 2;
-    const pageW = Math.max(0, Math.min((width - 2 * MARGIN) / across, (height - 2 * MARGIN - (labels ? LABEL : 0)) * PAGE_ASPECT));
+    root.style.setProperty('--margin', `${MARGIN}px`);
     root.style.setProperty('--page-w', `${pageW}px`);
     root.style.setProperty('--page-h', `${pageW / PAGE_ASPECT}px`);
   }
@@ -78,6 +72,7 @@ export function createScroll(root: HTMLElement, pages: Record<Page, string>, { l
       root.classList.remove('scroll');
       root.removeAttribute('tabindex');
       root.removeAttribute('aria-label');
+      root.style.removeProperty('--margin');
       root.style.removeProperty('--page-w');
       root.style.removeProperty('--page-h');
     },

@@ -1,13 +1,14 @@
 /* The flick viewer (src/lib/flick.ts). Its root is a view (views.css), which positions it.
-   It sets --page-w, --page-h and --shift on the book. */
+   It sets --margin, --page-w and --page-h on the root, and --shift on the book. Its first view
+   sits where scroll's does: at the top, centred across. */
 .flick {
   overflow: hidden; cursor: pointer;
   user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; touch-action: pan-y;
 }
 .flick-book {
-  position: absolute; left: 50%; top: 50%;
+  position: absolute; left: 50%; top: var(--margin);
   width: calc(2 * var(--page-w)); height: var(--page-h);
-  transform: translate(calc(-50% + var(--shift, 0) * var(--page-w)), -50%);
+  transform: translateX(calc(-50% + var(--shift, 0) * var(--page-w)));
 }
 .flick-slot { position: absolute; top: 0; width: var(--page-w); height: 100%; }
 .flick-slot[data-layer$="-left"] { left: 0; }
@@ -26,6 +27,6 @@
 
 .flick-label[hidden] { display: none; }
 .flick-label {
-  position: absolute; left: 0; right: 0; bottom: max(8px, env(safe-area-inset-bottom)); margin: 0;
-  text-align: center; font-size: 13px; color: var(--ink-dim); pointer-events: none;
+  position: absolute; left: 0; right: 0; top: calc(var(--margin) + var(--page-h) + var(--label-gap));
+  text-align: center; pointer-events: none;
 }

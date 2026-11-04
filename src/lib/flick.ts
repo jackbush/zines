@@ -10,16 +10,13 @@
 // the left slot left empty, so each turn is just the near half.
 
 import './flick.css';
+import { MARGIN, fitPage } from './fit';
 import { PAGES, PAGE_ASPECT, VIEWS, pageAlt, pageName, type Page } from './sheet';
 
 const TURN_MS = 700;
 /** The leaf's tilt and lift at the middle of a turn, in degrees and page heights. */
 const TILT_DEG = 2.5;
 const LIFT = 0.012;
-/** Switch to one page at a time when a spread's pages would be under this fraction of a single page's size. */
-const SINGLE_BELOW = 0.7;
-/** Space kept clear around the book (px), with room below for the page label. */
-const MARGIN = 40;
 /** A drag this far (px) is a swipe; anything shorter is a tap. */
 const SWIPE_PX = 40;
 
@@ -57,7 +54,7 @@ export function createFlick(root: HTMLElement, pages: Record<Page, string>, { la
       <div class="flick-slot flick-leaf" data-layer="leaf-left"><i class="flick-scan"></i></div>
       <div class="flick-slot flick-leaf" data-layer="leaf-right"><i class="flick-scan"></i></div>
     </div>
-    <p class="flick-label" aria-live="polite"${labels ? '' : ' hidden'}></p>`;
+    <p class="view-label flick-label" aria-live="polite"${labels ? '' : ' hidden'}></p>`;
   const book = root.querySelector<HTMLElement>('.flick-book')!;
   const status = root.querySelector<HTMLElement>('.flick-label')!;
   const layer = (name: string) => root.querySelector<HTMLElement>(`[data-layer="${name}"]`)!;
@@ -161,14 +158,10 @@ export function createFlick(root: HTMLElement, pages: Record<Page, string>, { la
     frame = requestAnimationFrame(tick);
   }
 
-  /** Sizes the book to the space it has, switching between spreads and single pages. */
+  /** Sizes the book as the scroll view sizes its pages, switching between spreads and single pages. */
   function layout() {
-    const rect = root.getBoundingClientRect();
-    const width = Math.max(0, rect.width - 2 * MARGIN);
-    const height = Math.max(0, rect.height - 2 * MARGIN);
-    const spreadW = Math.min(width / 2, height * PAGE_ASPECT);
-    const singleW = Math.min(width, height * PAGE_ASPECT);
-    const nowSingle = spreadW < SINGLE_BELOW * singleW;
+    const { across, pageW } = fitPage(root.clientWidth, root.clientHeight, labels);
+    const nowSingle = across === 1;
     if (nowSingle !== single) {
       // Keep the reader's place: the first page of the old view, in the new set of views.
       const page = views[index].left ?? views[index].right;
@@ -180,9 +173,9 @@ export function createFlick(root: HTMLElement, pages: Record<Page, string>, { la
         turn = null;
       }
     }
-    const pageW = single ? singleW : spreadW;
-    book.style.setProperty('--page-w', `${pageW}px`);
-    book.style.setProperty('--page-h', `${pageW / PAGE_ASPECT}px`);
+    root.style.setProperty('--margin', `${MARGIN}px`);
+    root.style.setProperty('--page-w', `${pageW}px`);
+    root.style.setProperty('--page-h', `${pageW / PAGE_ASPECT}px`);
     root.dataset.mode = single ? 'single' : 'spread';
     if (!turn) settle();
   }
@@ -227,6 +220,9 @@ export function createFlick(root: HTMLElement, pages: Record<Page, string>, { la
       root.replaceChildren();
       root.classList.remove('flick');
       delete root.dataset.mode;
+      root.style.removeProperty('--margin');
+      root.style.removeProperty('--page-w');
+      root.style.removeProperty('--page-h');
     },
   };
 }
