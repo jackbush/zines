@@ -1,5 +1,5 @@
 // Site-wide metadata; BaseLayout builds every page's title, share tags and icons from it.
-export const site = { name: 'Zines', description: 'Zines by Jack Bush.' };
+export const site = { name: 'Zines', description: 'Zine library.' };
 
 /** The palette. BaseLayout makes each a CSS variable (`paper` → `--paper`, `inkDim` → `--ink-dim`). */
 export const colours = {

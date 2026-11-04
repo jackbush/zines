@@ -25,7 +25,7 @@ const { href = url(), label = 'All zines', hidden = false, home = false } = Astr
     const back = document.getElementById('back');
     if (back.hasAttribute('data-home')) {
       back.href = '/';
-      back.setAttribute('aria-label', 'Back to Jack Bush');
+      back.setAttribute('aria-label', 'Back to homepage');
       back.hidden = false;
     } else {
       const next = new URL(back.href);
