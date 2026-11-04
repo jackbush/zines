@@ -29,6 +29,12 @@ const LAYOUT: Record<Page, { col: number; row: number; flipped: boolean }> = {
 /** What the reader sees in turn: the cover alone, the spreads, then the back alone. */
 export const VIEWS: readonly (readonly Page[])[] = [['cover'], ['1', '2'], ['3', '4'], ['5', '6'], ['back']];
 
+/** A page's short label: 'Cover', '1', …, 'Back'. */
+export const pageName = (p: Page) => (p === 'cover' ? 'Cover' : p === 'back' ? 'Back' : p);
+
+/** A page image's alt text. */
+export const pageAlt = (p: Page) => (p === 'cover' ? 'Cover' : p === 'back' ? 'Back cover' : `Page ${p}`);
+
 /** A sheet's width over its height: A-series paper is 1:√2, laid landscape. */
 export const SHEET_ASPECT = Math.SQRT2;
 

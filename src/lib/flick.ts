@@ -10,7 +10,7 @@
 // the left slot left empty, so each turn is just the near half.
 
 import './flick.css';
-import { PAGES, PAGE_ASPECT, VIEWS, type Page } from './sheet';
+import { PAGES, PAGE_ASPECT, VIEWS, pageAlt, pageName, type Page } from './sheet';
 
 const TURN_MS = 700;
 /** The leaf's tilt and lift at the middle of a turn, in degrees and page heights. */
@@ -39,8 +39,7 @@ function shiftOf(view: View, single: boolean): number {
 }
 
 function label(view: View): string {
-  const name = (p: Page) => (p === 'cover' ? 'Cover' : p === 'back' ? 'Back' : p);
-  return [view.left, view.right].filter((p): p is Page => !!p).map(name).join('–');
+  return [view.left, view.right].filter((p): p is Page => !!p).map(pageName).join('–');
 }
 
 export interface Flick {
@@ -70,7 +69,7 @@ export function createFlick(root: HTMLElement, pages: Record<Page, string>): Fli
     PAGES.map((p) => {
       const img = new Image();
       img.src = pages[p];
-      img.alt = p === 'cover' ? 'Cover' : p === 'back' ? 'Back cover' : `Page ${p}`;
+      img.alt = pageAlt(p);
       img.draggable = false;
       return [p, img];
     }),

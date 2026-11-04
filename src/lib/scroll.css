@@ -1,0 +1,10 @@
+/* The scroll view (src/lib/scroll.ts). It sets --page-w and --page-h on the root. */
+.scroll {
+  position: absolute; inset: 0; overflow-y: auto; padding: 16px;
+  display: flex; flex-direction: column; align-items: center; gap: 24px;
+}
+.scroll:focus-visible { outline: 2px solid var(--line, #000); outline-offset: -2px; }
+.scroll-view { margin: 0; flex: none; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.scroll-pages { display: flex; }
+.scroll-pages img { display: block; width: var(--page-w); height: var(--page-h); box-shadow: 0 0 0 1px var(--line, #000); }
+.scroll-view figcaption { font-size: 13px; color: var(--ink-dim, #666); }

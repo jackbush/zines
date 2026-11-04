@@ -1,0 +1,182 @@
+---
+// A private check of a sheet before it's published: pick or drop a PNG and read it as a flick
+// or a scroll. It's sliced in the browser with the same map as the build, and keeps nothing:
+// no storage, no upload, and every load starts empty.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Back from '../components/Back.astro';
+import { site } from '../lib/site';
+---
+
+<BaseLayout title={`Preview | ${site.name}`}>
+  <meta name="robots" content="noindex" slot="head" />
+  <Back />
+  <main id="app" data-empty>
+    <header>
+      <div class="bar">
+        <canvas class="thumb" id="thumb" hidden aria-hidden="true"></canvas>
+        <span class="name" id="name" hidden></span>
+        <label class="btn upload">
+          <input id="file" type="file" accept="image/png" />
+          <span>Upload<span class="more"> new version</span></span>
+        </label>
+        <div class="toggle" id="toggle" role="group" aria-label="View" hidden>
+          <button type="button" data-mode="scroll" aria-pressed="false">Scroll</button>
+          <button type="button" data-mode="flick" aria-pressed="true">Flick</button>
+        </div>
+      </div>
+      <p class="note" id="note" role="status" hidden></p>
+    </header>
+    <div class="stage" id="stage">
+      <button class="zone" id="zone" type="button">Drop an A3 landscape PNG here, or choose a file</button>
+    </div>
+  </main>
+  <div class="drop" id="drop" aria-hidden="true" hidden>Drop to preview</div>
+</BaseLayout>
+
+<script>
+  import { createFlick } from '../lib/flick';
+  import { createScroll } from '../lib/scroll';
+  import { isSheetShaped } from '../lib/sheet';
+  import { slice, type Sheet } from '../lib/slice';
+
+  type Mode = 'flick' | 'scroll';
+  const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+  const app = $('app');
+  const input = $<HTMLInputElement>('file');
+  const thumb = $<HTMLCanvasElement>('thumb');
+  const name = $('name');
+  const note = $('note');
+  const toggle = $('toggle');
+  const stage = $('stage');
+  const drop = $('drop');
+
+  let mode: Mode = 'flick';
+  let sheet: Sheet | null = null;
+  let viewer: { el: HTMLElement; destroy(): void } | null = null;
+  // Counts uploads, decided when each starts: a slow decode that finishes after a newer file was
+  // chosen sees it's out of date and drops its result.
+  let generation = 0;
+
+  function unmount() {
+    viewer?.destroy();
+    viewer?.el.remove();
+    viewer = null;
+  }
+
+  function mount() {
+    unmount();
+    if (!sheet) return;
+    const el = document.createElement('div');
+    el.className = 'viewer';
+    stage.append(el);
+    viewer = { el, ...(mode === 'flick' ? createFlick(el, sheet.pages) : createScroll(el, sheet.pages)) };
+    for (const button of toggle.querySelectorAll('button')) button.setAttribute('aria-pressed', String(button.dataset.mode === mode));
+  }
+
+  function say(text: string) {
+    note.textContent = text;
+    note.hidden = !text;
+  }
+
+  async function load(file: File) {
+    const mine = ++generation;
+    let next: Sheet;
+    try {
+      next = await slice(file);
+    } catch {
+      if (mine === generation) say(`Couldn't read ${file.name} as an image.`);
+      return;
+    }
+    if (mine !== generation) return next.dispose();
+
+    unmount();
+    sheet?.dispose();
+    sheet = next;
+    delete app.dataset.empty;
+    name.textContent = name.title = file.name;
+    thumb.width = next.thumb.width;
+    thumb.height = next.thumb.height;
+    thumb.getContext('2d')!.drawImage(next.thumb, 0, 0);
+    for (const el of [thumb, name, toggle]) el.hidden = false;
+    say(isSheetShaped(next.width, next.height) ? '' : 'Not A-series landscape: pages will be stretched');
+    mount();
+  }
+
+  input.addEventListener('change', () => {
+    const file = input.files?.[0];
+    // Cleared so choosing the same file again still counts as a change.
+    input.value = '';
+    if (file) load(file);
+  });
+  $('zone').addEventListener('click', () => input.click());
+  toggle.addEventListener('click', (e) => {
+    const next = (e.target as Element).closest<HTMLElement>('button')?.dataset.mode as Mode | undefined;
+    if (next && next !== mode) {
+      mode = next;
+      mount();
+    }
+  });
+
+  // Dropping a file works anywhere, at any time. dragenter and dragleave also fire for the page's
+  // children, so a counter tells when the drag has really left.
+  let dragging = 0;
+  const hasFiles = (e: DragEvent) => !!e.dataTransfer?.types.includes('Files');
+  const setDragging = (n: number) => {
+    dragging = n;
+    drop.hidden = n === 0;
+  };
+  addEventListener('dragenter', (e) => hasFiles(e) && setDragging(dragging + 1));
+  addEventListener('dragleave', (e) => hasFiles(e) && setDragging(Math.max(0, dragging - 1)));
+  // Cancelling dragover is what allows a drop, and stops the browser opening the file instead.
+  addEventListener('dragover', (e) => e.preventDefault());
+  addEventListener('drop', (e) => {
+    e.preventDefault();
+    setDragging(0);
+    const file = e.dataTransfer?.files[0];
+    if (file) load(file);
+  });
+</script>
+
+<style>
+  [hidden] { display: none !important; }
+  main { height: 100dvh; display: grid; grid-template-rows: auto 1fr; }
+  header { padding: max(14px, env(safe-area-inset-top)) 16px 14px 68px; border-bottom: 1px solid var(--line); }
+  .bar { height: 40px; display: flex; align-items: center; gap: 12px; }
+  .thumb { flex: none; height: 36px; width: auto; box-shadow: 0 0 0 1px var(--line); }
+  .name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  /* Right-aligned: with no file the upload button is the only thing in the bar. */
+  .upload { margin-left: auto; }
+  .name:not([hidden]) + .upload { margin-left: 0; }
+  .note { margin: 0; padding-top: 8px; font-size: 13px; color: var(--ink-dim); }
+
+  .btn, .toggle button {
+    height: 36px; padding: 0 12px; display: inline-flex; align-items: center; flex: none;
+    border: 1px solid var(--line); background: #fff; color: var(--ink); font: inherit; font-size: 14px; cursor: pointer;
+  }
+  .btn:hover, .toggle button:hover { background: var(--ink); color: #fff; }
+  .btn { position: relative; }
+  main[data-empty] .more { display: none; }
+  /* The file input stays focusable but invisible; its label shows the focus ring. */
+  .btn input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+  .btn:has(input:focus-visible), .toggle button:focus-visible, .zone:focus-visible { outline: 2px solid var(--line); outline-offset: 2px; }
+  .toggle { display: flex; flex: none; }
+  .toggle button + button { margin-left: -1px; }
+  .toggle button[aria-pressed='true'] { background: var(--ink); color: #fff; }
+
+  .stage { position: relative; min-height: 0; }
+  .stage :global(.viewer) { position: absolute; inset: 0; }
+  .zone {
+    position: absolute; inset: 16px; padding: 16px; display: grid; place-items: center; text-align: center;
+    border: 1px dashed var(--line); background: #fff; color: var(--ink-dim); font: inherit; cursor: pointer;
+  }
+  main:not([data-empty]) .zone { display: none; }
+  .drop {
+    position: fixed; inset: 8px; z-index: 4; display: grid; place-items: center; pointer-events: none;
+    border: 2px dashed var(--line); background: rgb(255 255 255 / 0.85);
+  }
+
+  @media (max-width: 599px) {
+    .more { display: none; }
+    .bar { gap: 8px; }
+  }
+</style>

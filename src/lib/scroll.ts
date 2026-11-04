@@ -1,0 +1,82 @@
+// The scroll view: every view of the book stacked down the page, a spread's two pages touching at
+// the spine, lone pages centred. Narrow screens get one page per row instead of spreads.
+
+import './scroll.css';
+import { PAGES, PAGE_ASPECT, VIEWS, pageAlt, pageName, type Page } from './sheet';
+
+/** Below this width (px) the view stacks single pages. */
+const NARROW_PX = 600;
+/** Space around the stack (px), and below each view for its label. */
+const MARGIN = 16;
+const LABEL = 24;
+
+export interface Scroll {
+  /** Removes the view's listeners and markup. */
+  destroy(): void;
+}
+
+/** Fills `root` with a scrolling stack of these page images. */
+export function createScroll(root: HTMLElement, pages: Record<Page, string>): Scroll {
+  root.classList.add('scroll');
+  root.tabIndex = 0;
+  root.setAttribute('aria-label', 'All pages');
+
+  // One <img> per page, made once and moved between layouts.
+  const imgs = Object.fromEntries(
+    PAGES.map((p) => {
+      const img = new Image();
+      img.src = pages[p];
+      img.alt = pageAlt(p);
+      return [p, img];
+    }),
+  ) as Record<Page, HTMLImageElement>;
+
+  let narrow: boolean | null = null;
+
+  function build() {
+    const groups = narrow ? PAGES.map((p) => [p]) : VIEWS;
+    root.replaceChildren(
+      ...groups.map((group) => {
+        const figure = document.createElement('figure');
+        figure.className = 'scroll-view';
+        const row = document.createElement('div');
+        row.className = 'scroll-pages';
+        row.append(...group.map((p) => imgs[p]));
+        const caption = document.createElement('figcaption');
+        caption.textContent = group.map(pageName).join('–');
+        figure.append(row, caption);
+        return figure;
+      }),
+    );
+  }
+
+  /** Sizes the pages to fit the width, and short enough that a view fits the height. */
+  function layout() {
+    const { clientWidth: width, clientHeight: height } = root;
+    const nowNarrow = width < NARROW_PX;
+    if (nowNarrow !== narrow) {
+      narrow = nowNarrow;
+      build();
+    }
+    const across = narrow ? 1 : 2;
+    const pageW = Math.max(0, Math.min((width - 2 * MARGIN) / across, (height - 2 * MARGIN - LABEL) * PAGE_ASPECT));
+    root.style.setProperty('--page-w', `${pageW}px`);
+    root.style.setProperty('--page-h', `${pageW / PAGE_ASPECT}px`);
+  }
+
+  const resize = new ResizeObserver(layout);
+  resize.observe(root);
+  layout();
+
+  return {
+    destroy() {
+      resize.disconnect();
+      root.replaceChildren();
+      root.classList.remove('scroll');
+      root.removeAttribute('tabindex');
+      root.removeAttribute('aria-label');
+      root.style.removeProperty('--page-w');
+      root.style.removeProperty('--page-h');
+    },
+  };
+}
