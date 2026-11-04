@@ -1,10 +1,80 @@
 ---
-// Placeholder: the library of zines goes here.
+// The library: every zine on a shelf, then the preview "zine" alone on the last one.
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Back from '../components/Back.astro';
+import { PAGE_ASPECT } from '../lib/sheet';
+import { url } from '../lib/site';
+import { getZines } from '../lib/zines';
+
+const zines = getZines();
+// Intrinsic size of a thumb, so the layout doesn't jump; CSS scales it to the cover width.
+const THUMB_W = 220;
+const THUMB_H = Math.round(THUMB_W / PAGE_ASPECT);
+// The first row (three covers at most) is in view on load; the rest load lazily.
+const EAGER = 3;
 ---
 
 <BaseLayout title="Zines">
   <Back home hidden />
-  <h1>Zines</h1>
+  <main>
+    <h1>Zines</h1>
+    <!-- Every cover draws a shelf line wider than the page and the list clips it, so each row
+         gets one unbroken line at any width, with no JS and a short last row included. -->
+    <ul class="shelves">
+      {zines.map((zine, i) => (
+        <li>
+          <a href={url(zine.slug + '/')} data-zine>
+            <span class="cover"><img src={zine.thumb} alt="" width={THUMB_W} height={THUMB_H} loading={i < EAGER ? 'eager' : 'lazy'} /></span>
+            <span class="name">{zine.name}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+    <ul class="shelves">
+      <li>
+        <a href={url('preview/')} data-zine>
+          <span class="cover"><span class="placeholder" style={`aspect-ratio:${PAGE_ASPECT}`}>Preview</span></span>
+          <span class="name">Preview</span>
+        </a>
+      </li>
+    </ul>
+  </main>
 </BaseLayout>
+
+<script is:inline>
+  // ?from=home: zine links carry it so the zine's back button returns here with the flag.
+  if (new URLSearchParams(location.search).get('from') === 'home') {
+    for (const a of document.querySelectorAll('a[data-zine]')) {
+      const next = new URL(a.href);
+      next.searchParams.set('from', 'home');
+      a.href = next.href;
+    }
+  }
+</script>
+
+<style>
+  main { max-width: 760px; margin: 0 auto; padding: max(14px, env(safe-area-inset-top)) 16px max(32px, env(safe-area-inset-bottom)); }
+  h1 { margin: 0 0 32px; min-height: 40px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600; }
+  /* Fixed-width covers wrap by themselves: three fit on desktop, two on medium, one on phones. */
+  .shelves {
+    --cover: 220px;
+    list-style: none; margin: 0 0 32px; padding: 0;
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 32px;
+    overflow-x: clip;
+  }
+  li { width: min(var(--cover), 100%); }
+  a { display: block; color: var(--ink); text-decoration: none; }
+  .cover { position: relative; display: block; }
+  /* The shelf: 200vw wide, centred on the cover, so overlapping lines in a row merge. */
+  .cover::after {
+    content: ''; position: absolute; top: 100%; left: 50%; width: 200vw; height: 6px;
+    transform: translateX(-50%); background: var(--line); pointer-events: none;
+  }
+  img, .placeholder { display: block; width: 100%; height: auto; border: 1px solid var(--line); background: #fff; transition: transform 0.12s; }
+  .placeholder { display: grid; place-items: center; border-style: dashed; color: var(--ink-dim); }
+  .name { display: block; margin-top: 14px; font-size: 14px; text-align: center; }
+  a:hover img, a:hover .placeholder { transform: translateY(-3px); }
+  a:focus-visible { outline: none; }
+  a:focus-visible img, a:focus-visible .placeholder { outline: 2px solid var(--line); outline-offset: 3px; }
+  @media (prefers-reduced-motion: reduce) { img, .placeholder { transition: none; } }
+</style>
